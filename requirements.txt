@@ -1,1 +1,13 @@
- 
+# General requirements
+numpy
+matplotlib
+ipython
+tqdm
+
+# PyTorch and torchvision
+torch
+torchvision
+
+# dotenv for environment variables
+python-dotenv
+pytest

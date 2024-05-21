@@ -54,6 +54,14 @@ source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
 pip install -r requirements.txt
 ```
 
+Running tests
+```
+python -m unittest discover
+python -m tests.test_arabic_utilities
+or
+set PYTHONPATH=%CD%
+pytest
+```
 
 ### Usage
 
