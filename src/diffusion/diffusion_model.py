@@ -40,9 +40,13 @@ def train_diffusion_model(model, dataloader, epochs, device, save_path):
 
 @torch.no_grad()
 def evaluate_model(model, text, font_name, font_size, image_size, is_arabic, device):
-    model.eval()
     image = render_text_image(text, image_size, font_name, font_size, is_arabic)
     image = transforms.ToTensor()(image).unsqueeze(0).to(device)
-    t = torch.tensor([1.0])[:, None, None, None].to(device)
-    generated_image = model(image, t)
-    return generated_image
+    t = torch.ones(1, 1, 1, 1).to(device)
+    logger.debug(f"evaluate_model: input image shape: {image.shape}, t shape: {t.shape}")
+    with torch.no_grad():
+        model.eval()
+        output = model(image, t)
+        logger.debug(f"evaluate_model: output shape: {output.shape}")
+    return output
+

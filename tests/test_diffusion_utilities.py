@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 # .\tests\test_diffusion_utilities.py
 
+# -*- coding: utf-8 -*-
+# .\tests\test_diffusion_utilities.py
+
 import unittest
 import torch
 import os
@@ -67,6 +70,23 @@ class TestDiffusionUtilities(unittest.TestCase):
         t = torch.rand(batch_size, 1, 1, 1).to(self.device)
         output = self.model(images, t)
         self.assertEqual(output.shape, images.shape)
+
+    def test_intermediate_shapes(self):
+        # Test the shapes of intermediate outputs
+        batch_size = 2
+        images, _ = next(iter(self.dataloader))
+        images = images.to(self.device)
+        t = torch.rand(batch_size, 1, 1, 1).to(self.device)
+        x = self.model.init_conv(images)
+        self.assertEqual(x.shape, (batch_size, 64, 128, 512))
+        down1 = self.model.down1(x)
+        self.assertEqual(down1.shape, (batch_size, 128, 64, 256))
+        down2 = self.model.down2(down1)
+        self.assertEqual(down2.shape, (batch_size, 256, 32, 128))
+        down3 = self.model.down3(down2)
+        self.assertEqual(down3.shape, (batch_size, 512, 16, 64))
+        hiddenvec = self.model.to_vec(down3)
+        self.assertEqual(hiddenvec.shape, (batch_size, 512, 4, 16))
 
     def test_training_with_multiple_epochs(self):
         # Test the training process with multiple epochs
