@@ -16,8 +16,10 @@ pytest
 PIL
 arabic_reshaper
 PyICU
+python-bidi
 
 # OCR for testing
 opencv-python
 easyocr
 pillow
+
