@@ -2,32 +2,30 @@
 # .\tests\test_arabic_utilities.py
 
 import unittest
-from src.arabic_utilities import generate_valid_arabic_ligatures
+from src.lang_utilities import get_next_generation, arabic_alphabet
 
-class TestGenerateValidArabicLigatures(unittest.TestCase):
+class TestGetNextGeneration(unittest.TestCase):
 
-    def test_generate_valid_arabic_ligatures(self):
-        # Call the function
-        ligatures = generate_valid_arabic_ligatures()
+    def setUp(self):
+        # Setup code
+        pass
 
-        # Define expected results
-        expected_ligatures = {"لا", "لله", "بب", "مم", "نن", "للا"}  # This should match your common_ligatures
+    def test_empty_initial_string(self):
+        result = get_next_generation("", arabic_alphabet)
+        self.assertEqual(result, arabic_alphabet)
 
-        # Check that all expected ligatures are in the result
-        for ligature in expected_ligatures:
-            self.assertIn(ligature, ligatures)
+    def test_non_empty_initial_string(self):
+        initial_string = "أ"
+        expected_result = ["أ" + char for char in arabic_alphabet]
+        result = get_next_generation(initial_string, arabic_alphabet)
+        self.assertEqual(result, expected_result)
 
-        # Check that all ligatures in the result are valid
-        for ligature in ligatures:
-            self.assertTrue(ligature in expected_ligatures)
-
-        # Additional checks for invalid ligatures
-        invalid_ligatures = ["اا", "دد", "وو", "زر", "ذو"]
-        for ligature in invalid_ligatures:
-            self.assertNotIn(ligature, ligatures)
-
-        # Check that the function does not include non-common ligatures
-        self.assertNotIn("باب", ligatures)
+    def test_generic_alphabet(self):
+        english_alphabet = ["a", "b", "c", "d"]
+        initial_string = "test"
+        expected_result = ["testa", "testb", "testc", "testd"]
+        result = get_next_generation(initial_string, english_alphabet)
+        self.assertEqual(result, expected_result)
 
 if __name__ == "__main__":
     unittest.main()
