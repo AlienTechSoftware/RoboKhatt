@@ -58,6 +58,7 @@ Running tests
 ```
 python -m unittest discover
 python -m unittest discover -s tests -p "test_lang_utilities.py"
+python -m unittest discover -s tests -p "test_diffusion_utilities.py"
 or
 set PYTHONPATH=%CD%\src;%CD%
 pytest
