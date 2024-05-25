@@ -10,6 +10,23 @@ from .model_blocks import ResidualConvBlock, UnetDown, UnetUp, EmbedFC
 logger = logging.getLogger(__name__)
 
 class ContextUnet(nn.Module):
+    """
+    @brief A neural network model designed for image processing tasks, following a U-Net architecture.
+
+    @param in_channels The number of input channels in the images.
+    @param n_feat The number of features for the convolution layers.
+    @param n_cfeat The number of context features.
+    @param height The height of the input images.
+
+    The class consists of several layers including:
+    - init_conv: An initial convolution block to process the input image.
+    - down1, down2, down3: Downsampling blocks that reduce the spatial dimensions of the image while increasing the number of channels.
+    - to_vec: A bottleneck layer that transforms the downsampled image into a vector.
+    - timeembed1, timeembed2: Embedding layers for the time steps.
+    - contextembed1, contextembed2: Embedding layers for the context information.
+    - up0, up1, up2, up3: Upsampling blocks that restore the spatial dimensions of the image while combining information from the downsampling path.
+    - out: A final convolution block that produces the output image.
+    """
     def __init__(self, in_channels, n_feat=64, n_cfeat=10, height=128):
         super().__init__()
         self.in_channels = in_channels
@@ -42,9 +59,9 @@ class ContextUnet(nn.Module):
             nn.GroupNorm(8, n_feat * 8),
             nn.ReLU(),
         )
-        self.up1 = UnetUp(n_feat * 8, n_feat * 4)
-        self.up2 = UnetUp(n_feat * 4, n_feat * 2)
-        self.up3 = UnetUp(n_feat * 2, n_feat)
+        self.up1 = UnetUp(n_feat * 8, n_feat * 4)  # Ensure consistent channel sizes
+        self.up2 = UnetUp(n_feat * 4, n_feat * 2)  # Ensure consistent channel sizes
+        self.up3 = UnetUp(n_feat * 2, n_feat)  # Ensure consistent channel sizes
 
         # Output convolution block
         self.out = nn.Sequential(
@@ -55,6 +72,24 @@ class ContextUnet(nn.Module):
         )
 
     def forward(self, x, t, c=None):
+        """
+        @brief Forward pass of the ContextUnet model.
+
+        @param x The input image tensor.
+        @param t The time step tensor.
+        @param c The optional context tensor.
+
+        @return The output image tensor after processing through the U-Net architecture.
+
+        The forward pass includes the following steps:
+        - Initial Convolution: Process the input image through the initial convolution block.
+        - Downsampling: Reduce the spatial dimensions of the image through three downsampling blocks.
+        - Bottleneck: Transform the downsampled image into a vector.
+        - Embedding Generation: Generate context and time embeddings.
+        - Upsampling: Restore the spatial dimensions of the image while combining information from the downsampling path.
+        - Output Generation: Produce the final output image through the output convolution block.
+        """
+
         # Log the shapes of the input tensors
         logger.debug(f"ContextUnet: input x shape: {x.shape}, t shape: {t.shape}, c shape: {c.shape if c is not None else 'None'}")
 

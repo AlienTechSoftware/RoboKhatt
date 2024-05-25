@@ -49,6 +49,17 @@ class UnetDown(nn.Module):
         return self.model(x)
 
 class UnetUp(nn.Module):
+    """
+    @brief An upsampling block used in the ContextUnet class to restore the spatial dimensions of the image.
+
+    @param in_channels The number of input channels for the upsampling layer.
+    @param out_channels The number of output channels for the upsampling layer.
+
+    The class consists of:
+    - up: A transposed convolution layer that increases the spatial dimensions of the input.
+    - conv: A sequence of two residual convolution blocks that refine the upsampled image.
+    """
+
     def __init__(self, in_channels, out_channels):
         super().__init__()
         self.up = nn.ConvTranspose2d(in_channels, out_channels, kernel_size=2, stride=2)
@@ -58,17 +69,35 @@ class UnetUp(nn.Module):
         )
 
     def forward(self, x, skip):
+        """
+        @brief Forward pass of the UnetUp block.
+
+        @param x The upsampled image tensor.
+        @param skip The corresponding skip connection tensor from the downsampling path.
+
+        @return The refined upsampled image tensor.
+
+        The forward pass includes the following steps:
+        - Upsampling: Increase the spatial dimensions of the input tensor using the transposed convolution layer.
+        - Padding: If necessary, pad the upsampled image to match the spatial dimensions of the skip connection.
+        - Concatenation: Concatenate the upsampled image and the skip connection along the channel dimension.
+        - Convolution: Process the concatenated image through the residual convolution blocks to produce the final output.
+        """
+
         logger.debug(f"UnetUp: before up - x shape: {x.shape}, skip shape: {skip.shape}")
         x = self.up(x)
         logger.debug(f"UnetUp: after up - x shape: {x.shape}")
         diffY = skip.size()[2] - x.size()[2]
         diffX = skip.size()[3] - x.size()[3]
+        logger.debug(f"UnetUp: padding - diffY: {diffY}, diffX: {diffX}")
         x = F.pad(x, (diffX // 2, diffX - diffX // 2, diffY // 2, diffY - diffY // 2))
+        logger.debug(f"UnetUp: after padding - x shape: {x.shape}")
         x = torch.cat((skip, x), dim=1)
         logger.debug(f"UnetUp: after cat - x shape: {x.shape}")
         x = self.conv(x)
         logger.debug(f"UnetUp: after conv - x shape: {x.shape}")
         return x
+
 
 class EmbedFC(nn.Module):
     def __init__(self, input_dim, emb_dim):
