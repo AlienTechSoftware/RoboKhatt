@@ -61,6 +61,9 @@ python -m unittest discover -s tests -p "test_lang_utilities.py"
 python -m unittest discover -s tests -p "test_diffusion_utilities.py"
 or
 set PYTHONPATH=%CD%\src;%CD%
+
+pip install -e .
+
 pytest
 
 taskkill /F /IM python.exe /T
