@@ -59,7 +59,7 @@ Running tests
 python -m unittest discover
 python -m tests.test_arabic_utilities
 or
-set PYTHONPATH=%CD%
+set PYTHONPATH=%CD%\src;%CD%
 pytest
 ```
 

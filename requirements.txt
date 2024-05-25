@@ -11,3 +11,11 @@ torchvision
 # dotenv for environment variables
 python-dotenv
 pytest
+
+#image generation
+PIL
+
+# OCR for testing
+opencv-python
+easyocr
+pillow

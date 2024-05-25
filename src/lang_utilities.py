@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# .\src\arabic_utilities.py
+# .\src\lang_utilities.py
 
 # Example usage with Arabic alphabet
 arabic_alphabet = [

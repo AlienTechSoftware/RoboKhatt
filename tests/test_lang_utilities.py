@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# .\tests\test_arabic_utilities.py
+# .\tests\test_lang_utilities.py
 
 import unittest
 from src.lang_utilities import get_next_generation, arabic_alphabet
