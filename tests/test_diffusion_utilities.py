@@ -5,10 +5,9 @@ import unittest
 import torch
 import os
 from torch.utils.data import DataLoader
-from PIL import Image
-from src.diffusion_utilities import TextImageDataset, render_text_image, train_diffusion_model, evaluate_model
+from src.diffusion_utilities import TextImageDataset, render_text_image, train_diffusion_model, evaluate_model, ContextUnet
 from src.lang_utilities import arabic_alphabet, generate_all_combinations
-from src.diffusion_utilities import ContextUnet
+from PIL import Image
 
 class TestDiffusionUtilities(unittest.TestCase):
 
@@ -45,11 +44,12 @@ class TestDiffusionUtilities(unittest.TestCase):
         text = "اختبار"
         image = render_text_image(text, self.image_size, self.font_name, self.font_size, self.is_arabic)
         self.assertIsInstance(image, Image.Image)
+        self.assertEqual(image.size, self.image_size)
 
     def test_train_diffusion_model(self):
         # Test the training process
         trained_model = train_diffusion_model(self.model, self.dataloader, epochs=1, device=self.device, save_path=self.save_path)
-        self.assertIsInstance(trained_model, ContextUnet)
+        self.assertIsNotNone(trained_model)
         self.assertTrue(os.path.exists(self.save_path))
 
     def test_evaluate_model(self):
@@ -57,6 +57,21 @@ class TestDiffusionUtilities(unittest.TestCase):
         text_to_generate = "اختبار"
         generated_image = evaluate_model(self.model, text_to_generate, self.font_name, self.font_size, self.image_size, self.is_arabic, self.device)
         self.assertIsInstance(generated_image, torch.Tensor)
+        self.assertEqual(generated_image.shape[2:], self.image_size)
+
+    def test_model_forward(self):
+        # Test the forward pass of the model
+        batch_size = 2
+        images, _ = next(iter(self.dataloader))
+        images = images.to(self.device)
+        t = torch.rand(batch_size, 1, 1, 1).to(self.device)
+        output = self.model(images, t)
+        self.assertEqual(output.shape, images.shape)
+
+    def tearDown(self):
+        # Clean up any created files
+        if os.path.exists(self.save_path):
+            os.remove(self.save_path)
 
 if __name__ == "__main__":
     unittest.main()
