@@ -40,12 +40,11 @@ def render_text_image(text, image_size, font_name, font_size, position):
         'bottom-right': (image_size[0] - text_width, image_size[1] - text_height),
     }
 
-    # Special case for bottom-center alignment to ensure bottom border alignment
-    if position == 'bottom-center':
-        x = (image_size[0] - text_width) // 2
-        y = image_size[1] - text_height
-    else:
-        x, y = positions.get(position, (0, 0))  # Default to top-left if position is invalid
+    x, y = positions.get(position, (0, 0))  # Default to top-left if position is invalid
+
+    # Adjust for bottom alignments to ensure text is not cut off
+    if position in ['bottom-left', 'bottom-center', 'bottom-right']:
+        y -= font.getmetrics()[1]  # Adjust y by the font's descent to avoid clipping
 
     # Draw the text on the image
     draw.text((x, y), text, font=font, fill='black')
