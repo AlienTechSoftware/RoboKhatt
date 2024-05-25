@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# .\src\diffusion\context_unet.py
+# src/diffusion/context_unet.py
 
 import torch
 import torch.nn as nn
@@ -135,7 +135,7 @@ class ContextUnet(nn.Module):
 
         # Final output layer
         out = self.out(torch.cat((up4, x), 1))
+        logger.debug(f"ContextUnet: concatenated out shape: {torch.cat((up4, x), 1).shape}")
         logger.debug(f"ContextUnet: out shape: {out.shape}")
 
         return out
-    

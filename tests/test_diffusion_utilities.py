@@ -8,6 +8,11 @@ from torch.utils.data import DataLoader
 from src.diffusion import TextImageDataset, render_text_image, ContextUnet
 from src.lang_utilities import arabic_alphabet, generate_all_combinations
 from PIL import Image
+import logging
+
+# Setup logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 class TestDiffusionUtilities(unittest.TestCase):
 
@@ -72,7 +77,9 @@ class TestDiffusionUtilities(unittest.TestCase):
         images, _ = next(iter(dataloader))
         images = images.to(self.device)
         t = torch.rand(batch_size, 1, 1, 1).to(self.device)
+        logger.debug(f"test_model_forward: images shape: {images.shape}, t shape: {t.shape}")
         output = self.model(images, t)
+        logger.debug(f"test_model_forward: output shape: {output.shape}")
         self.assertEqual(output.shape, images.shape)
 
     def test_intermediate_shapes(self):
@@ -85,14 +92,19 @@ class TestDiffusionUtilities(unittest.TestCase):
         images = images.to(self.device)
         t = torch.rand(batch_size, 1, 1, 1).to(self.device)
         x = self.model.init_conv(images)
+        logger.debug(f"test_intermediate_shapes: x shape after init_conv: {x.shape}")
         self.assertEqual(x.shape, (batch_size, 64, 128, 512))
         down1 = self.model.down1(x)
+        logger.debug(f"test_intermediate_shapes: down1 shape: {down1.shape}")
         self.assertEqual(down1.shape, (batch_size, 128, 64, 256))
         down2 = self.model.down2(down1)
+        logger.debug(f"test_intermediate_shapes: down2 shape: {down2.shape}")
         self.assertEqual(down2.shape, (batch_size, 256, 32, 128))
         down3 = self.model.down3(down2)
+        logger.debug(f"test_intermediate_shapes: down3 shape: {down3.shape}")
         self.assertEqual(down3.shape, (batch_size, 512, 16, 64))
         hiddenvec = self.model.to_vec(down3)
+        logger.debug(f"test_intermediate_shapes: hiddenvec shape: {hiddenvec.shape}")
         self.assertEqual(hiddenvec.shape, (batch_size, 512, 4, 16))
 
     @unittest.skip("Skipping multi-epoch training test temporarily")
