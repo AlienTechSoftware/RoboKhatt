@@ -67,15 +67,29 @@ def generate_all_combinations_iter(alphabet: list, max_length: int) -> list:
     # Create a pool of workers
     pool = mp.Pool(mp.cpu_count())
 
-    # Divide work among workers
-    tasks = [(initial, alphabet, max_length) for initial in initial_combinations]
-
-    results = []
     try:
+        # Divide work among workers
+        tasks = [(initial, alphabet, max_length) for initial in initial_combinations]
+
+        results = []
         with tqdm(total=total_combinations, desc="Generating combinations") as pbar:
-            for result in pool.imap_unordered(generate_combinations_worker, tasks):
+            for i, result in enumerate(pool.imap_unordered(generate_combinations_worker, tasks)):
                 results.extend(result)
-                pbar.update(len(result))
+                if (i + 1) % 100 == 0:
+                    pbar.update(len(result))
+                    pbar.refresh()  # Force refresh the progress bar
+                    time.sleep(0)  # Yield to the OS to allow console update
+
+            pbar.update(total_combinations % 100)  # Update the remaining progress if any
+
+        # Remove duplicates to ensure correctness
+        unique_results = list(set(results))
+
+        # Add the initial empty string if not already included
+        if "" not in unique_results:
+            unique_results.append("")
+
+        return unique_results
 
     except KeyboardInterrupt:
         print("Process interrupted. Returning generated combinations so far.")
@@ -83,17 +97,9 @@ def generate_all_combinations_iter(alphabet: list, max_length: int) -> list:
         pool.join()
         return results
 
-    pool.close()
-    pool.join()
-
-    # Remove duplicates to ensure correctness
-    unique_results = list(set(results))
-
-    # Add the initial empty string if not already included
-    if "" not in unique_results:
-        unique_results.append("")
-
-    return unique_results
+    finally:
+        pool.close()
+        pool.join()
 
 def generate_all_combinations(alphabet: list, max_length: int) -> list:
     """

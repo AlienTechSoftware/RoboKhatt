@@ -57,10 +57,13 @@ pip install -r requirements.txt
 Running tests
 ```
 python -m unittest discover
-python -m tests.test_arabic_utilities
+python -m unittest discover -s tests -p "test_lang_utilities.py"
 or
 set PYTHONPATH=%CD%\src;%CD%
 pytest
+
+taskkill /F /IM python.exe /T
+
 ```
 
 ### Usage

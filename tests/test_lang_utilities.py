@@ -22,7 +22,7 @@ class TestGenerateAllCombinations(unittest.TestCase):
 
     def test_generate_all_combinations_arabic_max_length_3(self):
         alphabet = arabic_alphabet
-        max_length = 3
+        max_length = 4
         combinations = generate_all_combinations(alphabet, max_length)
         expected_count = sum(len(alphabet) ** i for i in range(max_length + 1))
         self.assertEqual(len(combinations), expected_count)
