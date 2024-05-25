@@ -53,8 +53,8 @@ class UnetUp(nn.Module):
         super().__init__()
         self.up = nn.ConvTranspose2d(in_channels, out_channels, kernel_size=2, stride=2)
         self.conv = nn.Sequential(
-            ResidualConvBlock(out_channels * 2, out_channels),
-            ResidualConvBlock(out_channels, out_channels)
+            ResidualConvBlock(out_channels * 2, out_channels, is_res=True),
+            ResidualConvBlock(out_channels, out_channels, is_res=True)
         )
 
     def forward(self, x, skip):
