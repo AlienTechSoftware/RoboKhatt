@@ -23,17 +23,34 @@ class ResidualConvBlock(nn.Module):
             self.res_conv = None
 
     def forward(self, x):
+        logger.debug(f"ResidualConvBlock: input x shape: {x.shape}")
         identity = x
+
         out = self.conv1(x)
+        logger.debug(f"ResidualConvBlock: after conv1 - out shape: {out.shape}")
+
         out = self.bn1(out)
+        logger.debug(f"ResidualConvBlock: after bn1 - out shape: {out.shape}")
+
         out = self.relu(out)
+        logger.debug(f"ResidualConvBlock: after relu - out shape: {out.shape}")
+
         out = self.conv2(out)
+        logger.debug(f"ResidualConvBlock: after conv2 - out shape: {out.shape}")
+
         out = self.bn2(out)
+        logger.debug(f"ResidualConvBlock: after bn2 - out shape: {out.shape}")
+
         if self.is_res:
             if self.res_conv is not None:
                 identity = self.res_conv(identity)
+                logger.debug(f"ResidualConvBlock: after res_conv - identity shape: {identity.shape}")
             out += identity
+            logger.debug(f"ResidualConvBlock: after adding identity - out shape: {out.shape}")
+
         out = self.relu(out)
+        logger.debug(f"ResidualConvBlock: final output shape: {out.shape}")
+
         return out
 
 class UnetDown(nn.Module):
@@ -57,14 +74,18 @@ class UnetUp(nn.Module):
 
     The class consists of:
     - up: A transposed convolution layer that increases the spatial dimensions of the input.
-    - conv: A sequence of two residual convolution blocks that refine the upsampled image.
     - match_channels: A convolution layer to match the channels of the skip connection.
+    - conv: A sequence of two residual convolution blocks that refine the upsampled image.
     """
 
     def __init__(self, in_channels, out_channels):
         super().__init__()
         self.up = nn.ConvTranspose2d(in_channels, out_channels, kernel_size=2, stride=2)
-        self.match_channels = nn.Conv2d(out_channels, in_channels, kernel_size=1)
+        # Adjust the number of channels from out_channels to in_channels to match the skip connection
+        self.match_channels = nn.Conv2d(out_channels, out_channels, kernel_size=1)
+        logger.debug(f"UnetUp: init out_channels : {out_channels}")
+        logger.debug(f"UnetUp: init in_channels : {in_channels}")
+        logger.debug(f"UnetUp: init match_channels : {self.match_channels}")
         self.conv = nn.Sequential(
             ResidualConvBlock(out_channels * 2, out_channels, is_res=True),
             ResidualConvBlock(out_channels, out_channels, is_res=True)
@@ -82,6 +103,7 @@ class UnetUp(nn.Module):
         The forward pass includes the following steps:
         - Upsampling: Increase the spatial dimensions of the input tensor using the transposed convolution layer.
         - Padding: If necessary, pad the upsampled image to match the spatial dimensions of the skip connection.
+        - Channel Matching: Adjust the number of channels in the upsampled image to match the skip connection if necessary.
         - Concatenation: Concatenate the upsampled image and the skip connection along the channel dimension.
         - Convolution: Process the concatenated image through the residual convolution blocks to produce the final output.
         """
@@ -96,17 +118,25 @@ class UnetUp(nn.Module):
         x = F.pad(x, (diffX // 2, diffX - diffX // 2, diffY // 2, diffY - diffY // 2))
         logger.debug(f"UnetUp: after padding - x shape: {x.shape}")
 
+        # Match channels if necessary
         if x.size(1) != skip.size(1):
             logger.debug(f"UnetUp: before matching channels - x shape: {x.shape}, skip shape: {skip.shape}")
             x = self.match_channels(x)  # Adjust channels to match the skip connection
             logger.debug(f"UnetUp: after matching channels - x shape: {x.shape}")
-        
+
+        # Concatenate and convolve
         x = torch.cat((skip, x), dim=1)
         logger.debug(f"UnetUp: after cat - x shape: {x.shape}")
-        
+
+        # Adjusting conv block to handle increased number of channels
+        if x.size(1) != self.conv[0].conv1.in_channels:
+            logger.debug(f"UnetUp: before conv - x shape: {x.shape}, expected: {self.conv[0].conv1.in_channels}")
+            self.conv[0] = ResidualConvBlock(x.size(1), self.conv[0].conv1.out_channels, is_res=True)
+            logger.debug(f"UnetUp: updated conv block to handle {x.size(1)} channels")
+
         x = self.conv(x)
         logger.debug(f"UnetUp: after conv - x shape: {x.shape}")
-        
+
         return x
 
 class EmbedFC(nn.Module):
