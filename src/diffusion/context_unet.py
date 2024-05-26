@@ -43,11 +43,13 @@ class ContextUnet(nn.Module):
         self.down3 = UnetDown(n_feat * 4, n_feat * 8)
 
         # Bottleneck layer with average pooling to reduce spatial dimensions
+        # The kernel size is adjusted to reduce the spatial dimensions to a specific size.
+        # For an input of size (512, 16, 64), we use a kernel size that will transform this to (512, 1, 4).
+        # This helps in reducing the size significantly while retaining important features.
         self.to_vec = nn.Sequential(
             nn.AvgPool2d(kernel_size=(self.h // 32, self.h // 32)),
             nn.GELU()
         )
-
         # Time and context embeddings
         self.timeembed1 = EmbedFC(1, n_feat * 8)
         self.timeembed2 = EmbedFC(1, n_feat * 4)
