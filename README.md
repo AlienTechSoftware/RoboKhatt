@@ -39,56 +39,89 @@ graph TD
   B --> L[utilities.py]
 ```
 
+
 ## UNet Implementation in ContextUnet
 
+The UNet architecture in the ContextUnet implementation consists of multiple layers, forming a characteristic "U" shape. It starts with an initial convolution block, followed by three downsampling layers, a bottleneck layer, and then proceeds with four upsampling layers to restore the spatial dimensions of the input image. Embedding layers are also included to incorporate time and context information.
+
+### Detailed Breakdown of Layers and Steps
+
+1. **Initial Convolution:**
+   - `init_conv`: ResidualConvBlock
+
+2. **Downsampling Path (Encoder):**
+   - `down1`: UnetDown (64 -> 128 channels)
+   - `down2`: UnetDown (128 -> 256 channels)
+   - `down3`: UnetDown (256 -> 512 channels)
+
+3. **Bottleneck Layer:**
+   - `to_vec`: AvgPool2d + GELU
+
+4. **Embedding Layers:**
+   - `timeembed1`: EmbedFC (1 -> 512 channels)
+   - `timeembed2`: EmbedFC (1 -> 256 channels)
+   - `contextembed1`: EmbedFC (n_cfeat -> 512 channels)
+   - `contextembed2`: EmbedFC (n_cfeat -> 256 channels)
+
+5. **Upsampling Path (Decoder):**
+   - `up0`: ConvTranspose2d + GroupNorm + ReLU (512 channels)
+   - `up1`: UnetUp (512 -> 256 channels)
+   - `up2`: UnetUp (256 -> 128 channels)
+   - `up3`: UnetUp (128 -> 64 channels)
+
+6. **Output Convolution:**
+   - `out`: Conv2d + GroupNorm + ReLU + Conv2d (128 -> 3 channels, for RGB output)
 
 ```mermaid
 graph TD
-  A[ContextUnet] --> B[init_conv: ResidualConvBlock]
-  A --> C[Downsampling]
-  C --> D[down1: UnetDown]
-  C --> E[down2: UnetDown]
-  C --> F[down3: UnetDown]
-  A --> G[to_vec: AvgPool2d + GELU]
-  A --> H[Embedding Layers]
-  H --> I[timeembed1: EmbedFC]
-  H --> J[timeembed2: EmbedFC]
-  H --> K[contextembed1: EmbedFC]
-  H --> L[contextembed2: EmbedFC]
-  A --> M[Upsampling]
-  M --> N[up0: ConvTranspose2d]
-  M --> O[up1: UnetUp]
-  M --> P[up2: UnetUp]
-  M --> Q[up3: UnetUp]
-  A --> R[out: Conv2d + GroupNorm + ReLU]
+  Start[Input Image]
+  Start -->|Initial Convolution| init_conv[init_conv: ResidualConvBlock]
+  init_conv -->|Downsampling| down1[down1: UnetDown]
+  down1 --> down2[down2: UnetDown]
+  down2 --> down3[down3: UnetDown]
+  down3 --> to_vec[to_vec: AvgPool2d + GELU]
+  to_vec -->|Embedding Layers| embedding_layers[Embedding Layers]
+  embedding_layers -->|Upsampling| up0[up0: ConvTranspose2d]
+  up0 --> up1[up1: UnetUp]
+  up1 --> up2[up2: UnetUp]
+  up2 --> up3[up3: UnetUp]
+  up3 --> out[out: Conv2d + GroupNorm + ReLU]
+  out -->|Output Image| End[End]
+  
+  subgraph Embedding Layers
+    to_vec --> timeembed1[timeembed1: EmbedFC]
+    to_vec --> timeembed2[timeembed2: EmbedFC]
+    to_vec --> contextembed1[contextembed1: EmbedFC]
+    to_vec --> contextembed2[contextembed2: EmbedFC]
+  end
 ```
 
-# Summary of the Hyperparameters in RoboKhatt Implementation
+## Summary of the Hyperparameters in RoboKhatt Implementation
 
-## ContextUnet Hyperparameters
+### ContextUnet Hyperparameters
 - `in_channels`: Number of input channels in the images (typically 3 for RGB images).
 - `n_feat`: Number of features for the convolution layers (default is 64).
 - `n_cfeat`: Number of context features (default is 10).
 - `height`: Height of the input images (default is 128).
 
-## ResidualConvBlock Hyperparameters
+### ResidualConvBlock Hyperparameters
 - `in_channels`: Number of input channels.
 - `out_channels`: Number of output channels.
 - `is_res`: Boolean indicating whether the block is a residual block (default is `False`).
 
-## UnetDown Hyperparameters
+### UnetDown Hyperparameters
 - `in_channels`: Number of input channels.
 - `out_channels`: Number of output channels.
 
-## UnetUp Hyperparameters
+### UnetUp Hyperparameters
 - `in_channels`: Number of input channels.
 - `out_channels`: Number of output channels.
 
-## EmbedFC Hyperparameters
+### EmbedFC Hyperparameters
 - `input_dim`: Dimensionality of the input.
 - `emb_dim`: Dimensionality of the embedding.
 
-## TextImageDataset Hyperparameters
+### TextImageDataset Hyperparameters
 - `alphabet`: List of characters representing the alphabet.
 - `max_length`: Maximum length of the generated text strings.
 - `font_name`: Name of the font to be used for rendering text images.
@@ -96,22 +129,21 @@ graph TD
 - `image_size`: Size of the generated images (tuple of width and height).
 - `is_arabic`: Boolean indicating whether the text is Arabic (default is `False`).
 
-## Diffusion Model Training Hyperparameters
+### Diffusion Model Training Hyperparameters
 - `epochs`: Number of training epochs.
 - `device`: Device used for training (CPU or GPU).
 - `save_path`: Path to save the trained model.
 - `learning_rate`: Learning rate for the optimizer (default is `1e-3`).
 
-## Utilities Hyperparameters
+### Utilities Hyperparameters
 
-### render_text_image
+#### render_text_image
 - `text`: Text to be rendered on the image.
 - `image_size`: Size of the image (tuple of width and height).
 - `font_name`: Name of the font.
 - `font_size`: Size of the font.
 - `position`: Position to align the text (e.g., 'top-left', 'center').
 - `is_arabic`: Boolean indicating whether the text is Arabic (default is `False`).
-
 
 ## Project Structure
 

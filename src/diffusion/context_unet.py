@@ -133,9 +133,10 @@ class ContextUnet(nn.Module):
         up4 = self.up3(up3, down1)
         logger.debug(f"ContextUnet: up4 shape: {up4.shape}")
 
-        # Final output layer
-        out = self.out(torch.cat((up4, x), 1))
-        logger.debug(f"ContextUnet: concatenated out shape: {torch.cat((up4, x), 1).shape}")
+        # Log shapes before concatenation and final output
+        concatenated_out = torch.cat((up4, x), 1)
+        logger.debug(f"ContextUnet: concatenated out shape: {concatenated_out.shape}")
+        out = self.out(concatenated_out)
         logger.debug(f"ContextUnet: out shape: {out.shape}")
 
         return out

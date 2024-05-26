@@ -58,11 +58,13 @@ class UnetUp(nn.Module):
     The class consists of:
     - up: A transposed convolution layer that increases the spatial dimensions of the input.
     - conv: A sequence of two residual convolution blocks that refine the upsampled image.
+    - match_channels: A convolution layer to match the channels of the skip connection.
     """
 
     def __init__(self, in_channels, out_channels):
         super().__init__()
         self.up = nn.ConvTranspose2d(in_channels, out_channels, kernel_size=2, stride=2)
+        self.match_channels = nn.Conv2d(out_channels, in_channels, kernel_size=1)
         self.conv = nn.Sequential(
             ResidualConvBlock(out_channels * 2, out_channels, is_res=True),
             ResidualConvBlock(out_channels, out_channels, is_res=True)
@@ -83,21 +85,29 @@ class UnetUp(nn.Module):
         - Concatenation: Concatenate the upsampled image and the skip connection along the channel dimension.
         - Convolution: Process the concatenated image through the residual convolution blocks to produce the final output.
         """
-
         logger.debug(f"UnetUp: before up - x shape: {x.shape}, skip shape: {skip.shape}")
         x = self.up(x)
         logger.debug(f"UnetUp: after up - x shape: {x.shape}")
+
+        # Correctly pad x if necessary
         diffY = skip.size()[2] - x.size()[2]
         diffX = skip.size()[3] - x.size()[3]
         logger.debug(f"UnetUp: padding - diffY: {diffY}, diffX: {diffX}")
         x = F.pad(x, (diffX // 2, diffX - diffX // 2, diffY // 2, diffY - diffY // 2))
         logger.debug(f"UnetUp: after padding - x shape: {x.shape}")
+
+        if x.size(1) != skip.size(1):
+            logger.debug(f"UnetUp: before matching channels - x shape: {x.shape}, skip shape: {skip.shape}")
+            x = self.match_channels(x)  # Adjust channels to match the skip connection
+            logger.debug(f"UnetUp: after matching channels - x shape: {x.shape}")
+        
         x = torch.cat((skip, x), dim=1)
         logger.debug(f"UnetUp: after cat - x shape: {x.shape}")
+        
         x = self.conv(x)
         logger.debug(f"UnetUp: after conv - x shape: {x.shape}")
+        
         return x
-
 
 class EmbedFC(nn.Module):
     def __init__(self, input_dim, emb_dim):
