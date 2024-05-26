@@ -1,12 +1,12 @@
  
-# Robo Khatt (خط)
+# Robo Khutt (خط)
 Where Tradition Meets Technology
 
-![RoboKhatt Logo](./logo.png)
+![RoboKhutt Logo](./logo.png)
 
-Robo Khatt is an innovative project that leverages advanced diffusion models to generate high-quality Arabic calligraphy. By combining the artistry of traditional calligraphy with the power of artificial intelligence, RoboKhatt aims to provide beautifully rendered text that can be used in various applications.
+Robo Khutt is an innovative project that leverages advanced diffusion models to generate high-quality Arabic calligraphy. By combining the artistry of traditional calligraphy with the power of artificial intelligence, RoboKhutt aims to provide beautifully rendered text that can be used in various applications.
 
-The project is called "RoboKhatt" to reflect its focus on text rendering and calligraphy and AI Automation. The name combines "Robo" for AI / robotics and "Khatt" the Arabic (خط) word for calligraphy
+The project is called "RoboKhutt" to reflect its focus on text rendering and calligraphy and AI Automation. The name combines "Robo" for AI / robotics and "Khutt" the Arabic (خط) word for calligraphy
 
 ## Problem Statement
 In traditional text rendering, we often encounter challenges with laying out text properly or finding suitable substitutions for certain characters or words. As a fun and ambitious solution, I propose training a diffusion model to become a calligrapher! However, recognizing the enormity of this task, I plan to take an incremental approach.
@@ -15,7 +15,7 @@ In traditional text rendering, we often encounter challenges with laying out tex
 My approach involves training a model to render small sentences or even single words initially. At runtime, the rendered image will be used to feed the diffusion model. This approach allows us to start with simpler tasks and gradually scale up to more complex text generation.
 
 ## Additional Notes
-I'm excited about the potential of this project to merge the elegance of Arabic calligraphy with the power of modern AI. Any feedback or contributions to further enhance RoboKhatt are welcome!
+I'm excited about the potential of this project to merge the elegance of Arabic calligraphy with the power of modern AI. Any feedback or contributions to further enhance RoboKhutt are welcome!
 
 ## Features
 
@@ -96,7 +96,7 @@ graph TD
   end
 ```
 
-## Summary of the Hyperparameters in RoboKhatt Implementation
+## Summary of the Hyperparameters in RoboKhutt Implementation
 
 ### ContextUnet Hyperparameters
 - `in_channels`: Number of input channels in the images (typically 3 for RGB images).
@@ -162,8 +162,8 @@ graph TD
 
 1. Clone the repository:
 ```bash
-   git clone https://github.com/your_username/RoboKhatt.git
-   cd RoboKhatt
+   git clone https://github.com/your_username/RoboKhutt.git
+   cd RoboKhutt
 ```
 
 2. Create a virtual environment and activate it:
