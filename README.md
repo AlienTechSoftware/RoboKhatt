@@ -1,6 +1,7 @@
  
 # Robo Khutt (خط)
 Where Tradition Meets Technology
+[العربي](./README_ar.md)
 
 ![RoboKhutt Logo](./logo.png)
 
