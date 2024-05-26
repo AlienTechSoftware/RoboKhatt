@@ -1,0 +1,72 @@
+# Let's save the translated markdown content to a file and provide a download link.
+
+translated_content = """
+# روبو خط (Robo Khutt)
+حيث تلتقي التقاليد بالتكنولوجيا
+
+![RoboKhutt Logo](./logo.png)
+
+روبو خط هو مشروع مبتكر يستفيد من نماذج الانتشار المتقدمة لتوليد الخط العربي بجودة عالية. من خلال دمج فن الخط التقليدي بقوة الذكاء الاصطناعي، يهدف RoboKhutt إلى توفير نصوص مرسومة بشكل جميل يمكن استخدامها في تطبيقات مختلفة.
+
+تم تسمية المشروع بـ "RoboKhutt" ليعكس تركيزه على رسم النصوص والخط والذكاء الاصطناعي. يجمع الاسم بين "Robo" للإشارة إلى الذكاء الاصطناعي / الروبوتات و"Khutt" الكلمة العربية للخط.
+
+## مشكلة المشروع
+في عملية رسم النصوص التقليدية، نواجه غالبًا تحديات في تنسيق النصوص بشكل صحيح أو إيجاد بدائل مناسبة لبعض الأحرف أو الكلمات. كحل ممتع وطموح، أقترح تدريب نموذج انتشار ليصبح خطاطًا! ومع ذلك، نظراً لضخامة هذه المهمة، أخطط لاتخاذ نهج تدريجي.
+
+## النهج المتبع
+يتضمن النهج الخاص بي تدريب نموذج لرسم الجمل الصغيرة أو حتى الكلمات الفردية في البداية. في وقت التشغيل، سيتم استخدام الصورة المرسومة لتغذية نموذج الانتشار. يسمح لنا هذا النهج بالبدء بالمهام الأبسط وتدريجياً توسيع نطاق المهمة لتوليد النصوص الأكثر تعقيدًا.
+
+## ملاحظات إضافية
+أنا متحمس لإمكانية هذا المشروع في دمج أناقة الخط العربي بقوة الذكاء الاصطناعي الحديث. أي ملاحظات أو مساهمات لتحسين RoboKhutt مرحب بها!
+
+## الميزات
+
+- **تحويل النص إلى صورة**: تحويل النص العربي إلى صور خطية مذهلة.
+- **أنماط قابلة للتخصيص**: يدعم أنماط الخطوط المختلفة.
+- **التعلم التدريجي**: يبدأ بالأحرف الفردية ثم يتوسع إلى الكلمات والجمل.
+- **مخرجات عالية الجودة**: يستخدم نماذج انتشار حديثة لضمان نتائج بصرية جذابة.
+
+```mermaid
+graph TD
+  A[الدليل الرئيسي] --> B[diffusion]
+  A --> C[data_processing.py]
+  A --> D[img_utilities.py]
+  A --> E[lang_utilities.py]
+  A --> F[model_inference.py]
+  A --> G[model_training.py]
+  B --> H[context_unet.py]
+  B --> I[dataset.py]
+  B --> J[diffusion_model.py]
+  B --> K[model_blocks.py]
+  B --> L[utilities.py]
+```
+
+## تنفيذ UNet في ContextUnet
+
+يتكون هيكل UNet في تنفيذ ContextUnet من طبقات متعددة، مكونة شكل "U" المميز. يبدأ بكتلة التفاف ابتدائية، يليها ثلاث طبقات خفض، ثم طبقة عنق الزجاجة، ويستمر بأربع طبقات رفع لاستعادة الأبعاد المكانية للصورة المدخلة. تشمل الطبقات أيضًا طبقات تضمين لدمج معلومات الوقت والسياق.
+
+
+```mermaid
+graph TD
+  Start[صورة الإدخال]
+  Start -->|التفاف ابتدائي| init_conv[init_conv: ResidualConvBlock]
+  init_conv -->|خفض| down1[down1: UnetDown]
+  down1 --> down2[down2: UnetDown]
+  down2 --> down3[down3: UnetDown]
+  down3 --> to_vec[to_vec: AvgPool2d + GELU]
+  to_vec -->|طبقات التضمين| embedding_layers[طبقات التضمين]
+  embedding_layers -->|رفع| up0[up0: ConvTranspose2d]
+  up0 --> up1[up1: UnetUp]
+  up1 --> up2[up2: UnetUp]
+  up2 --> up3[up3: UnetUp]
+  up3 --> out[out: Conv2d + GroupNorm + ReLU]
+  out -->|صورة الإخراج| End[النهاية]
+  
+  subgraph طبقات التضمين
+    to_vec --> timeembed1[timeembed1: EmbedFC]
+    to_vec --> timeembed2[timeembed2: EmbedFC]
+    to_vec --> contextembed1[contextembed1: EmbedFC]
+    to_vec --> contextembed2[contextembed2: EmbedFC]
+  end
+```
+
