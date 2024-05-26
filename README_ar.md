@@ -1,8 +1,6 @@
-# Let's save the translated markdown content to a file and provide a download link.
-
-translated_content = """
 # روبو خط (Robo Khutt)
 حيث تلتقي التقاليد بالتكنولوجيا
+[English](./README_en.md)
 
 ![RoboKhutt Logo](./logo.png)
 
