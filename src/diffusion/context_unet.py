@@ -42,17 +42,17 @@ class ContextUnet(nn.Module):
         self.down2 = UnetDown(n_feat * 2, n_feat * 4)
         self.down3 = UnetDown(n_feat * 4, n_feat * 8)
 
-        # Bottleneck layer
+        # Bottleneck layer with average pooling to reduce spatial dimensions
         self.to_vec = nn.Sequential(
-            nn.AvgPool2d(kernel_size=(self.h // 16, self.h // 16)),
+            nn.AvgPool2d(kernel_size=(self.h // 8, self.h // 8)),
             nn.GELU()
         )
 
         # Time and context embeddings
         self.timeembed1 = EmbedFC(1, n_feat * 8)
         self.timeembed2 = EmbedFC(1, n_feat * 4)
-        self.contextembed1 = EmbedFC(1, n_feat * 8)
-        self.contextembed2 = EmbedFC(1, n_feat * 4)
+        self.contextembed1 = EmbedFC(n_cfeat, n_feat * 8)
+        self.contextembed2 = EmbedFC(n_cfeat, n_feat * 4)
 
         # Upsampling blocks
         self.up0 = nn.ConvTranspose2d(n_feat * 8, n_feat * 4, kernel_size=4, stride=4)
@@ -62,7 +62,7 @@ class ContextUnet(nn.Module):
 
         # Output convolution block
         self.out = nn.Sequential(
-            nn.Conv2d(n_feat, in_channels, kernel_size=3, padding=1),
+            nn.Conv2d(n_feat * 2, in_channels, kernel_size=3, padding=1),
             nn.GroupNorm(1, in_channels),
             nn.ReLU(inplace=True)
         )
