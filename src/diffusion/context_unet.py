@@ -37,38 +37,34 @@ class ContextUnet(nn.Module):
         # Initial convolution block
         self.init_conv = ResidualConvBlock(in_channels, n_feat, is_res=True)
 
-        # Downsampling layers
+        # Downsampling blocks
         self.down1 = UnetDown(n_feat, n_feat * 2)
         self.down2 = UnetDown(n_feat * 2, n_feat * 4)
         self.down3 = UnetDown(n_feat * 4, n_feat * 8)
 
-        # Vector transformation for the bottleneck
-        self.to_vec = nn.Sequential(nn.AvgPool2d(kernel_size=4), nn.GELU())
+        # Bottleneck layer
+        self.to_vec = nn.Sequential(
+            nn.AvgPool2d(kernel_size=(self.h // 16, self.h // 16)),
+            nn.GELU()
+        )
 
-        # Time embedding layers
+        # Time and context embeddings
         self.timeembed1 = EmbedFC(1, n_feat * 8)
         self.timeembed2 = EmbedFC(1, n_feat * 4)
+        self.contextembed1 = EmbedFC(1, n_feat * 8)
+        self.contextembed2 = EmbedFC(1, n_feat * 4)
 
-        # Context embedding layers
-        self.contextembed1 = EmbedFC(n_cfeat, n_feat * 8)
-        self.contextembed2 = EmbedFC(n_cfeat, n_feat * 4)
-
-        # Upsampling layers
-        self.up0 = nn.Sequential(
-            nn.ConvTranspose2d(n_feat * 8, n_feat * 8, kernel_size=(height // 32), stride=(height // 32)),
-            nn.GroupNorm(8, n_feat * 8),
-            nn.ReLU(),
-        )
-        self.up1 = UnetUp(n_feat * 8, n_feat * 4)  # Ensure consistent channel sizes
-        self.up2 = UnetUp(n_feat * 4, n_feat * 2)  # Ensure consistent channel sizes
-        self.up3 = UnetUp(n_feat * 2, n_feat)  # Ensure consistent channel sizes
+        # Upsampling blocks
+        self.up0 = nn.ConvTranspose2d(n_feat * 8, n_feat * 4, kernel_size=4, stride=4)
+        self.up1 = UnetUp(n_feat * 8, n_feat * 4)
+        self.up2 = UnetUp(n_feat * 4, n_feat * 2)
+        self.up3 = UnetUp(n_feat * 2, n_feat)
 
         # Output convolution block
         self.out = nn.Sequential(
-            nn.Conv2d(n_feat * 2, n_feat, kernel_size=3, stride=1, padding=1),
-            nn.GroupNorm(8, n_feat),
-            nn.ReLU(),
-            nn.Conv2d(n_feat, self.in_channels, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(n_feat, in_channels, kernel_size=3, padding=1),
+            nn.GroupNorm(1, in_channels),
+            nn.ReLU(inplace=True)
         )
 
     def forward(self, x, t, c=None):
@@ -100,8 +96,10 @@ class ContextUnet(nn.Module):
         # Downsampling
         down1 = self.down1(x)
         logger.debug(f"ContextUnet: after down1 - down1 shape: {down1.shape}")
+
         down2 = self.down2(down1)
         logger.debug(f"ContextUnet: after down2 - down2 shape: {down2.shape}")
+
         down3 = self.down3(down2)
         logger.debug(f"ContextUnet: after down3 - down3 shape: {down3.shape}")
 
@@ -124,19 +122,32 @@ class ContextUnet(nn.Module):
         logger.debug(f"ContextUnet: cemb2 shape: {cemb2.shape}, temb2 shape: {temb2.shape}")
 
         # Upsampling
-        up1 = self.up0(hiddenvec)
+        up1 = self.up1(cemb1 * hiddenvec + temb1, down3)
         logger.debug(f"ContextUnet: up1 shape: {up1.shape}")
-        up2 = self.up1(cemb1 * up1 + temb1, down3)
+
+        up2 = self.up2(cemb2 * up1 + temb2, down2)
         logger.debug(f"ContextUnet: up2 shape: {up2.shape}")
-        up3 = self.up2(cemb2 * up2 + temb2, down2)
+
+        up3 = self.up3(up2, down1)
         logger.debug(f"ContextUnet: up3 shape: {up3.shape}")
-        up4 = self.up3(up3, down1)
+
+        # Ensuring the spatial dimensions match for concatenation
+        if up3.size() != x.size():
+            logger.debug(f"ContextUnet: before final concat - up3 shape: {up3.shape}, x shape: {x.shape}")
+            diffY = x.size()[2] - up3.size()[2]
+            diffX = x.size()[3] - up3.size()[3]
+            up3 = F.pad(up3, (diffX // 2, diffX - diffX // 2, diffY // 2, diffY - diffY // 2))
+            logger.debug(f"ContextUnet: after final padding - up3 shape: {up3.shape}")
+
+        # Final concatenation and output
+        up4 = torch.cat((x, up3), dim=1)
         logger.debug(f"ContextUnet: up4 shape: {up4.shape}")
 
         # Log shapes before concatenation and final output
         concatenated_out = torch.cat((up4, x), 1)
         logger.debug(f"ContextUnet: concatenated out shape: {concatenated_out.shape}")
-        out = self.out(concatenated_out)
+
+        out = self.out(up4)
         logger.debug(f"ContextUnet: out shape: {out.shape}")
 
         return out
