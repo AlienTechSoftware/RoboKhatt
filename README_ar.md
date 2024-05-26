@@ -1,6 +1,6 @@
 # روبو خط (Robo Khutt)
 حيث تلتقي التقاليد بالتكنولوجيا
-[English](./README_en.md)
+[English](./README.md)
 
 ![RoboKhutt Logo](./logo.png)
 
