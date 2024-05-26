@@ -44,7 +44,7 @@ class ContextUnet(nn.Module):
 
         # Bottleneck layer with average pooling to reduce spatial dimensions
         self.to_vec = nn.Sequential(
-            nn.AvgPool2d(kernel_size=(self.h // 8, self.h // 8)),
+            nn.AvgPool2d(kernel_size=(self.h // 32, self.h // 32)),
             nn.GELU()
         )
 
