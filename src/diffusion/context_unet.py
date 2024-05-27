@@ -111,7 +111,7 @@ class ContextUnet(nn.Module):
 
         # Handle context tensor if not provided
         if c is None:
-            c = torch.zeros(x.shape[0], self.n_cfeat).to(x.device)
+            c = torch.zeros(x.shape[0], self.n_cfeat).to(device)
         
         # Generate context and time embeddings
         cemb1 = self.contextembed1(c).view(-1, self.n_feat * 8, 1, 1)
@@ -133,7 +133,6 @@ class ContextUnet(nn.Module):
         up3 = self.up3(up2, down1)
         logger.debug(f"ContextUnet: up3 shape: {up3.shape}")
 
-        # Ensuring the spatial dimensions match for concatenation
         if up3.size() != x.size():
             logger.debug(f"ContextUnet: before final concat - up3 shape: {up3.shape}, x shape: {x.shape}")
             diffY = x.size()[2] - up3.size()[2]
