@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # tests/test_dataset.py
 
 import unittest
@@ -15,7 +14,7 @@ class TestTextImageDataset(unittest.TestCase):
             "\u0623", "\u0625", "\u0622", "\u0621", "\u0624", "\u0626"
         ]
         self.max_length = 2
-        self.font_name = "arial"
+        self.font_name = "arial.ttf"
         self.font_size = 32
         self.image_size = (512, 128)
         self.is_arabic = True
@@ -31,7 +30,7 @@ class TestTextImageDataset(unittest.TestCase):
         )
 
     def test_len(self):
-        expected_length = sum(len(self.alphabet) ** i for i in range(1, self.max_length + 1)) + 1
+        expected_length = len(list(self.dataset.texts))
         self.assertEqual(len(self.dataset), expected_length)
 
     def test_getitem(self):

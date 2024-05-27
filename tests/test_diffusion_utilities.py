@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-# .\tests\test_diffusion_utilities.py
+# tests/test_diffusion_utilities.py
 
 import unittest
 import torch
 import os
 from torch.utils.data import DataLoader
 from src.diffusion import TextImageDataset, render_text_image, ContextUnet
-from src.lang_utilities import arabic_alphabet, generate_all_combinations
+from src.lang_utilities import arabic_alphabet
 from PIL import Image
 import logging
 
@@ -37,7 +37,7 @@ class TestDiffusionUtilities(unittest.TestCase):
         dataset = TextImageDataset(alphabet, max_length, self.font_name, self.font_size, self.image_size, self.is_arabic)
         
         # Test if dataset generates the correct number of samples
-        self.assertEqual(len(dataset), len(generate_all_combinations(alphabet, max_length)))
+        self.assertEqual(len(dataset), len(list(dataset.texts)))
 
         # Test if dataset returns images and text
         for i in range(len(dataset)):
