@@ -5,12 +5,16 @@ import torch
 import torch.nn as nn
 import os
 import logging
+from src.img_utilities import render_text_image
+from torchvision import transforms
 
 logger = logging.getLogger(__name__)
 
 def train_diffusion_model(model, dataloader, epochs, device, save_path):
+    logger.info(f"Training on device: {device}")
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
     mse_loss = nn.MSELoss()
+    model.to(device)  # Ensure the model is on the device
     model.train()
 
     for epoch in range(epochs):
@@ -40,13 +44,13 @@ def train_diffusion_model(model, dataloader, epochs, device, save_path):
 
 @torch.no_grad()
 def evaluate_model(model, text, font_name, font_size, image_size, is_arabic, device):
-    image = render_text_image(text, image_size, font_name, font_size, is_arabic)
+    image = render_text_image(text, image_size, font_name, font_size, 'bottom-right', is_arabic)
     image = transforms.ToTensor()(image).unsqueeze(0).to(device)
     t = torch.ones(1, 1, 1, 1).to(device)
     logger.debug(f"evaluate_model: input image shape: {image.shape}, t shape: {t.shape}")
     with torch.no_grad():
+        model.to(device)  # Ensure the model is on the device
         model.eval()
         output = model(image, t)
         logger.debug(f"evaluate_model: output shape: {output.shape}")
     return output
-

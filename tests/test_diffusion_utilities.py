@@ -7,6 +7,7 @@ import os
 from torch.utils.data import DataLoader
 from src.img_utilities import TextImageDataset, render_text_image
 from src.diffusion import ContextUnet
+from src.diffusion.diffusion_model import train_diffusion_model, evaluate_model
 from src.lang_utilities import arabic_alphabet
 from PIL import Image
 import logging
@@ -24,6 +25,7 @@ class TestDiffusionUtilities(unittest.TestCase):
         self.image_size = (512, 128)  # Correct image size as a tuple
         self.is_arabic = True
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        logger.info(f"TestDiffusionUtilities: running on {self.device}")
         self.save_path = ".generated/test_trained_model.pth"
 
         # Initialize the model
@@ -47,12 +49,11 @@ class TestDiffusionUtilities(unittest.TestCase):
             self.assertIsInstance(text, str)
 
     def test_render_text_image(self):
-        text = "بم"
-        image = render_text_image(text, self.image_size, self.font_name, self.font_size, 'center', self.is_arabic)
+        text = "تم"
+        image = render_text_image(text, self.image_size, self.font_name, self.font_size, 'bottom-right', self.is_arabic)
         self.assertIsInstance(image, Image.Image)
         self.assertEqual(image.size, self.image_size)
 
-    @unittest.skip("Skipping training test temporarily")
     def test_train_diffusion_model(self):
         alphabet = arabic_alphabet
         max_length = 2
@@ -62,9 +63,8 @@ class TestDiffusionUtilities(unittest.TestCase):
         self.assertIsNotNone(trained_model)
         self.assertTrue(os.path.exists(self.save_path))
 
-    @unittest.skip("Skipping evaluation test temporarily")
     def test_evaluate_model(self):
-        text_to_generate = "بم"
+        text_to_generate = "تم"
         generated_image = evaluate_model(self.model, text_to_generate, self.font_name, self.font_size, self.image_size, self.is_arabic, self.device)
         self.assertIsInstance(generated_image, torch.Tensor)
         self.assertEqual(generated_image.shape[2:], self.image_size)
@@ -107,23 +107,6 @@ class TestDiffusionUtilities(unittest.TestCase):
         hiddenvec = self.model.to_vec(down3)
         logger.debug(f"test_intermediate_shapes: hiddenvec shape: {hiddenvec.shape}")
         self.assertEqual(hiddenvec.shape, (batch_size, 512, 4, 16))
-
-    @unittest.skip("Skipping multi-epoch training test temporarily")
-    def test_training_with_multiple_epochs(self):
-        alphabet = arabic_alphabet
-        max_length = 2
-        dataset = TextImageDataset(alphabet, max_length, self.font_name, self.font_size, self.image_size, self.is_arabic)
-        dataloader = DataLoader(dataset, batch_size=2, shuffle=True)
-        trained_model = train_diffusion_model(self.model, dataloader, epochs=3, device=self.device, save_path=self.save_path)
-        self.assertIsNotNone(trained_model)
-        self.assertTrue(os.path.exists(self.save_path))
-
-    @unittest.skip("Skipping Arabic test with 4 characters")
-    def test_evaluate_arabic_text(self):
-        text_to_generate = "اختبار"
-        generated_image = evaluate_model(self.model, text_to_generate, self.font_name, self.font_size, self.image_size, self.is_arabic, self.device)
-        self.assertIsInstance(generated_image, torch.Tensor)
-        self.assertEqual(generated_image.shape[2:], self.image_size)
 
     def tearDown(self):
         if os.path.exists(self.save_path):
