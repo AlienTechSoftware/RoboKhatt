@@ -51,32 +51,33 @@ graph TD
 The UNet architecture in the ContextUnet implementation consists of multiple layers, forming a characteristic "U" shape. It starts with an initial convolution block, followed by three downsampling layers, a bottleneck layer, and then proceeds with four upsampling layers to restore the spatial dimensions of the input image. Embedding layers are also included to incorporate time and context information.
 
 ### Detailed Breakdown of Layers and Steps
+![](./docs/layers.png)
 
-1. **Initial Convolution:**
-   - `init_conv`: ResidualConvBlock
+1. **Initial Convolution: (Blue)**
+   - `init_conv`: ResidualConvBlock (3, 64) - Applies initial convolution with residual connections to capture basic features.
 
-2. **Downsampling Path (Encoder):**
-   - `down1`: UnetDown (64 -> 128 channels)
-   - `down2`: UnetDown (128 -> 256 channels)
-   - `down3`: UnetDown (256 -> 512 channels)
+2. **Downsampling Path (Encoder): (Green)**
+   - `down1`: UnetDown (64, 128) - Reduces spatial dimensions while increasing the feature depth to capture more complex features.
+   - `down2`: UnetDown (128, 256) - Further reduces spatial dimensions and increases feature depth for deeper feature extraction.
+   - `down3`: UnetDown (256, 512) - Deepest downsampling layer capturing the most complex and abstract features.
 
 3. **Bottleneck Layer:**
-   - `to_vec`: AvgPool2d + GELU
+   - `to_vec`: AvgPool2d + GELU (512, 512) - Compresses the feature maps into a vector, maintaining critical information for upsampling.
 
-4. **Embedding Layers:**
-   - `timeembed1`: EmbedFC (1 -> 512 channels)
-   - `timeembed2`: EmbedFC (1 -> 256 channels)
-   - `contextembed1`: EmbedFC (n_cfeat -> 512 channels)
-   - `contextembed2`: EmbedFC (n_cfeat -> 256 channels)
+4. **Embedding Layers: (Red)**
+   - `timeembed1`: EmbedFC (1, 512) - Embeds the time information into a 512-dimensional vector.
+   - `timeembed2`: EmbedFC (1, 256) - Further embeds the time information into a 256-dimensional vector.
+   - `contextembed1`: EmbedFC (n_cfeat, 512) - Embeds context features into a 512-dimensional vector.
+   - `contextembed2`: EmbedFC (n_cfeat, 256) - Further embeds context features into a 256-dimensional vector.
 
-5. **Upsampling Path (Decoder):**
-   - `up0`: ConvTranspose2d + GroupNorm + ReLU (512 channels)
-   - `up1`: UnetUp (512 -> 256 channels)
-   - `up2`: UnetUp (256 -> 128 channels)
-   - `up3`: UnetUp (128 -> 64 channels)
+5. **Upsampling Path (Decoder): (Yellow)**
+   - `up0`: ConvTranspose2d + GroupNorm + ReLU (512) - Begins upsampling, reversing the compression while adding normalization and activation.
+   - `up1`: UnetUp (512, 256) - Upsamples and combines with corresponding encoder features to refine the image details.
+   - `up2`: UnetUp (256, 128) - Further upsampling and refinement, progressively increasing spatial dimensions.
+   - `up3`: UnetUp (128, 64) - Final upsampling layer, restoring the image to near original spatial dimensions.
 
-6. **Output Convolution:**
-   - `out`: Conv2d + GroupNorm + ReLU + Conv2d (128 -> 3 channels, for RGB output)
+6. **Output Convolution: (Purple)**
+   - `out`: Conv2d + GroupNorm + ReLU + Conv2d (128, 3) - Final convolution to produce the 3-channel RGB output, with normalization and activation for final adjustments.
 
 ```mermaid
 graph TD
