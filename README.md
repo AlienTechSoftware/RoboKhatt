@@ -15,6 +15,11 @@ In traditional text rendering, we often encounter challenges with laying out tex
 ## Approach
 My approach involves training a model to render small sentences or even single words initially. At runtime, the rendered image will be used to feed the diffusion model. This approach allows us to start with simpler tasks and gradually scale up to more complex text generation.
 
+## Limitations
+- **Image Dimensions**: The generated images will be 512x128 pixels.
+- **Maximum Word Length**: Given the constraints of the image dimensions and the average character width (approximately 20 pixels), the model is designed to handle words up to 20-25 characters in length.
+- **Character Adaptability**: The model adapts to varying character widths and different calligraphy styles and fonts, ensuring optimal readability and aesthetic quality.
+
 ## Additional Notes
 I'm excited about the potential of this project to merge the elegance of Arabic calligraphy with the power of modern AI. Any feedback or contributions to further enhance RoboKhutt are welcome!
 
@@ -165,6 +170,10 @@ graph TD
 ```bash
    git clone https://github.com/your_username/RoboKhutt.git
    cd RoboKhutt
+```
+
+Dependencies
+```
 ```
 
 2. Create a virtual environment and activate it:
