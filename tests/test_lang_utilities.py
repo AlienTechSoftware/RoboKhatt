@@ -1,47 +1,44 @@
 # -*- coding: utf-8 -*-
-# .\tests\test_lang_utilities.py
+# tests/test_lang_utilities.py
 
 import unittest
-from src.lang_utilities import generate_all_combinations, arabic_alphabet, get_next_generation
+import re
+from src.lang_utilities import regex_count_arabic_letters, manual_count_arabic_letters, arabic_alphabet, arabic_letters_pattern, count_arabic_letters
 
-class TestGenerateAllCombinations(unittest.TestCase):
+class TestCountArabicLetters(unittest.TestCase):
 
-    def test_generate_all_combinations_small(self):
-        alphabet = ["ا", "ب", "ت"]  # Limit to a smaller subset for this test
-        max_length = 3
-        combinations = generate_all_combinations(alphabet, max_length)
-        expected_count = sum(len(alphabet) ** i for i in range(max_length + 1))
-        self.assertEqual(len(combinations), expected_count)
+    def test_regex_count_arabic_letters(self):
+        self.assertEqual(regex_count_arabic_letters("سلام"), 4)
+        self.assertEqual(regex_count_arabic_letters("السّلام"), 6)
+        self.assertEqual(regex_count_arabic_letters("الأصدقاء"), 8)
+        self.assertEqual(regex_count_arabic_letters("العالم"), 6)
+        self.assertEqual(regex_count_arabic_letters("إختبار"), 6)
+        self.assertEqual(regex_count_arabic_letters("س\u200Dلام"), 4)  # Including Zero Width Joiner (ZWJ)
+        self.assertEqual(regex_count_arabic_letters("س\u200Cلام"), 4)  # Including Zero Width Non-Joiner (ZWNJ)
 
-    def test_generate_all_combinations_arabic(self):
-        alphabet = arabic_alphabet
-        max_length = 2
-        combinations = generate_all_combinations(alphabet, max_length)
-        expected_count = sum(len(alphabet) ** i for i in range(max_length + 1))
-        self.assertEqual(len(combinations), expected_count)
+    def test_manual_count_arabic_letters(self):
+        self.assertEqual(manual_count_arabic_letters("سلام", arabic_alphabet), 4)
+        self.assertEqual(manual_count_arabic_letters("السّلام", arabic_alphabet), 6)
+        self.assertEqual(manual_count_arabic_letters("الأصدقاء", arabic_alphabet), 8)
+        self.assertEqual(manual_count_arabic_letters("العالم", arabic_alphabet), 6)
+        self.assertEqual(manual_count_arabic_letters("إختبار", arabic_alphabet), 6)
+        self.assertEqual(manual_count_arabic_letters("س\u200Dلام", arabic_alphabet), 4)  # Including Zero Width Joiner (ZWJ)
+        self.assertEqual(manual_count_arabic_letters("س\u200Cلام", arabic_alphabet), 4)  # Including Zero Width Non-Joiner (ZWNJ)
 
-    def test_generate_all_combinations_arabic_max_length_3(self):
-        alphabet = arabic_alphabet
-        max_length = 4
-        combinations = generate_all_combinations(alphabet, max_length)
-        expected_count = sum(len(alphabet) ** i for i in range(max_length + 1))
-        self.assertEqual(len(combinations), expected_count)
+    def test_count_arabic_letters(self):
+        self.assertEqual(count_arabic_letters("سلام"), 4)
+        self.assertEqual(count_arabic_letters("السّلام"), 6)
+        self.assertEqual(count_arabic_letters("الأصدقاء"), 8)
+        self.assertEqual(count_arabic_letters("العالم"), 6)
+        self.assertEqual(count_arabic_letters("إختبار"), 6)
+        self.assertEqual(count_arabic_letters("س\u200Dلام"), 4)  # Including Zero Width Joiner (ZWJ)
+        self.assertEqual(count_arabic_letters("س\u200Cلام"), 4)  # Including Zero Width Non-Joiner (ZWNJ)
 
-    def test_progress_and_interrupt(self):
-        alphabet = ["ا", "ب", "ت"]  # Limit to a smaller subset for this test
-        max_length = 5
-        try:
-            combinations = []
-            queue = [""]
-            while queue:
-                current = queue.pop(0)
-                if len(current) < max_length:
-                    next_gen = get_next_generation(current, alphabet)
-                    combinations.extend(next_gen)
-                    queue.extend(next_gen)
-        except KeyboardInterrupt:
-            print("Interrupted")
-            self.assertTrue(len(combinations) > 0)  # Ensure we still got some combinations
+    def test_count_with_control_characters(self):
+        self.assertEqual(regex_count_arabic_letters("س\u200Dلام"), 4)  # Including Zero Width Joiner (ZWJ)
+        self.assertEqual(regex_count_arabic_letters("س\u200Cلام"), 4)  # Including Zero Width Non-Joiner (ZWNJ)
+        self.assertEqual(manual_count_arabic_letters("س\u200Dلام", arabic_alphabet), 4)  # Including Zero Width Joiner (ZWJ)
+        self.assertEqual(manual_count_arabic_letters("س\u200Cلام", arabic_alphabet), 4)  # Including Zero Width Non-Joiner (ZWNJ)
 
 if __name__ == "__main__":
     unittest.main()
