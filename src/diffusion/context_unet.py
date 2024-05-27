@@ -50,6 +50,7 @@ class ContextUnet(nn.Module):
             nn.AvgPool2d(kernel_size=(self.h // 32, self.h // 32)),
             nn.GELU()
         )
+
         # Time and context embeddings
         self.timeembed1 = EmbedFC(1, n_feat * 8)
         self.timeembed2 = EmbedFC(1, n_feat * 4)
@@ -88,6 +89,8 @@ class ContextUnet(nn.Module):
         - Output Generation: Produce the final output image through the output convolution block.
         """
 
+        device = x.device  # Ensure the device is the same as the input tensor
+
         # Log the shapes of the input tensors
         logger.debug(f"ContextUnet: input x shape: {x.shape}, t shape: {t.shape}, c shape: {c.shape if c is not None else 'None'}")
 
@@ -114,10 +117,10 @@ class ContextUnet(nn.Module):
             c = torch.zeros(x.shape[0], self.n_cfeat).to(device)
         
         # Generate context and time embeddings
-        cemb1 = self.contextembed1(c).view(-1, self.n_feat * 8, 1, 1)
-        temb1 = self.timeembed1(t).view(-1, self.n_feat * 8, 1, 1)
-        cemb2 = self.contextembed2(c).view(-1, self.n_feat * 4, 1, 1)
-        temb2 = self.timeembed2(t).view(-1, self.n_feat * 4, 1, 1)
+        cemb1 = self.contextembed1(c).view(-1, self.n_feat * 8, 1, 1).to(device)
+        temb1 = self.timeembed1(t).view(-1, self.n_feat * 8, 1, 1).to(device)
+        cemb2 = self.contextembed2(c).view(-1, self.n_feat * 4, 1, 1).to(device)
+        temb2 = self.timeembed2(t).view(-1, self.n_feat * 4, 1, 1).to(device)
         
         # Log the shapes of the embeddings
         logger.debug(f"ContextUnet: cemb1 shape: {cemb1.shape}, temb1 shape: {temb1.shape}")
