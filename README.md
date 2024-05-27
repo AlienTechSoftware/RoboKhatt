@@ -174,7 +174,9 @@ graph TD
 ```
 
 Dependencies
-```
+```bash
+python -m pip install --upgrade pip
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 ```
 
 2. Create a virtual environment and activate it:
@@ -198,6 +200,10 @@ or
 set PYTHONPATH=%CD%\src;%CD%
 set PYTHONIOENCODING=utf-8
 set LOGGING_LEVEL=DEBUG
+
+set CUDA_HOME=C:\mltools\cuda_12_4
+set CUDA_PATH=C:\mltools\cuda_12_4
+set CUDA_PATH_V12_4=C:\mltools\cuda_12_4
 
 pip install -e .
 
