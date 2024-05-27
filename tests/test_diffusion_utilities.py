@@ -5,7 +5,8 @@ import unittest
 import torch
 import os
 from torch.utils.data import DataLoader
-from src.diffusion import TextImageDataset, render_text_image, ContextUnet
+from src.img_utilities import TextImageDataset, render_text_image
+from src.diffusion import ContextUnet
 from src.lang_utilities import arabic_alphabet
 from PIL import Image
 import logging
@@ -20,7 +21,7 @@ class TestDiffusionUtilities(unittest.TestCase):
         # Parameters for the tests
         self.font_name = "arial.ttf"
         self.font_size = 30
-        self.image_size = (512, 128)
+        self.image_size = (512, 128)  # Correct image size as a tuple
         self.is_arabic = True
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.save_path = ".generated/test_trained_model.pth"
@@ -47,7 +48,7 @@ class TestDiffusionUtilities(unittest.TestCase):
 
     def test_render_text_image(self):
         text = "بم"
-        image = render_text_image(text, self.image_size, self.font_name, self.font_size, self.is_arabic)
+        image = render_text_image(text, self.image_size, self.font_name, self.font_size, 'center', self.is_arabic)
         self.assertIsInstance(image, Image.Image)
         self.assertEqual(image.size, self.image_size)
 

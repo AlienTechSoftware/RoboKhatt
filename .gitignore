@@ -161,3 +161,4 @@ cython_debug/
 
 bootstrap.cmd
 .generated
+.datasets

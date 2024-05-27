@@ -1,48 +1,51 @@
+# -*- coding: utf-8 -*-
 # tests/test_dataset.py
 
 import unittest
-from src.diffusion.dataset import TextImageDataset
-from PIL import ImageFont
+import os
+import sqlite3
+from src.diffusion.dataset import ArabicDataset
 
-class TestTextImageDataset(unittest.TestCase):
-    def setUp(self):
-        self.alphabet = [
-            "\u0627", "\u0628", "\u062a", "\u062b", "\u062c", "\u062d", "\u062e",
-            "\u062f", "\u0630", "\u0631", "\u0632", "\u0633", "\u0634", "\u0635",
-            "\u0636", "\u0637", "\u0638", "\u0639", "\u063a", "\u0641", "\u0642",
-            "\u0643", "\u0644", "\u0645", "\u0646", "\u0647", "\u0648", "\u064a",
-            "\u0623", "\u0625", "\u0622", "\u0621", "\u0624", "\u0626"
-        ]
-        self.max_length = 2
-        self.font_name = "arial.ttf"
-        self.font_size = 32
-        self.image_size = (512, 128)
-        self.is_arabic = True
+class TestArabicDataset(unittest.TestCase):
 
-        # Check if font file exists
-        try:
-            self.font = ImageFont.truetype(self.font_name, self.font_size)
-        except IOError:
-            self.skipTest(f"Font '{self.font_name}' is not available.")
+    @classmethod
+    def setUpClass(cls):
+        cls.test_database_path = '.generated/test_arabic_words.db'
+        cls.arabic_dataset = ArabicDataset(db_path=cls.test_database_path)
+        cls.conn = sqlite3.connect(cls.test_database_path)
+        cls.cursor = cls.conn.cursor()
+        cls.test_word_file = '.datasets/test-word-list.txt'
 
-        self.dataset = TextImageDataset(
-            self.alphabet, self.max_length, self.font_name, self.font_size, self.image_size, self.is_arabic
-        )
+    @classmethod
+    def tearDownClass(cls):
+        cls.conn.close()
+        if os.path.exists(cls.test_database_path):
+            pass
+            # os.remove(cls.test_database_path)
 
-    def test_len(self):
-        expected_length = len(list(self.dataset.texts))
-        self.assertEqual(len(self.dataset), expected_length)
+    def test_load_words_from_file(self):
+        self.arabic_dataset.load_words_from_file(self.test_word_file)
+        words_by_length = self.arabic_dataset.load_arabic_datasources()
+        total_words = sum(len(words) for words in words_by_length.values())
+        self.cursor.execute('SELECT COUNT(*) FROM words')
+        db_word_count = self.cursor.fetchone()[0]
+        self.assertEqual(total_words, db_word_count)
 
-    def test_getitem(self):
-        for i in range(len(self.dataset)):
-            image, text = self.dataset[i]
-            self.assertEqual(image.shape, (3, self.image_size[1], self.image_size[0]))
+    def test_force_reload(self):
+        # Load initial words from file
+        self.arabic_dataset.load_words_from_file(self.test_word_file)
+        initial_words_by_length = self.arabic_dataset.load_arabic_datasources()
+        print(f"Initial words by length: {len(initial_words_by_length)}")
 
-    def test_image_rendering(self):
-        for i in range(min(10, len(self.dataset))):
-            image, text = self.dataset[i]
-            image = image.numpy().transpose((1, 2, 0)) * 255
-            self.assertEqual(image.shape, (self.image_size[1], self.image_size[0], 3))
+        # Force reload the datasource
+        self.arabic_dataset.load_arabic_datasources(force_reload=True)
+        words_by_length_after_insert = self.arabic_dataset.load_arabic_datasources()
+        print(f"Words by length after reload: {len(words_by_length_after_insert)}")
+
+        # Check that we have non-zero words in each size from 1-6
+        for length in range(1, 7):
+            print(f"index {length}")
+            self.assertGreater(len(words_by_length_after_insert.get(length, [])), 0)
 
 if __name__ == '__main__':
     unittest.main()
