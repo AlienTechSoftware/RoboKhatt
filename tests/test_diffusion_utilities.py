@@ -83,7 +83,7 @@ class TestDiffusionUtilities(unittest.TestCase):
 
     @unittest.skipIf(not torch.cuda.is_available(), "CUDA is not available")
     def test_train_diffusion_model_cuda(self):
-        self._train_diffusion_model_for_device("cuda:0")
+        self._train_diffusion_model_for_device("cuda")
 
     @unittest.skip("Skipping training test temporarily")
     def test_evaluate_model(self):
