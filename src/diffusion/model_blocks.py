@@ -23,33 +23,37 @@ class ResidualConvBlock(nn.Module):
             self.res_conv = None
 
     def forward(self, x):
-        logger.debug(f"ResidualConvBlock: input x shape: {x.shape}")
-        identity = x
+        device = x.device
+        logger.debug(f"ResidualConvBlock: input x shape: {x.shape}, input x device: {x.device}")
+        logger.debug(f"ResidualConvBlock: conv1 weight device: {self.conv1.weight.device}")
+
+        identity = x.to(device)
+        logger.debug(f"ResidualConvBlock: identity: {identity.shape}")
 
         out = self.conv1(x)
-        logger.debug(f"ResidualConvBlock: after conv1 - out shape: {out.shape}")
+        logger.debug(f"ResidualConvBlock: after conv1 - out shape: {out.shape}, out device: {out.device}")
 
         out = self.bn1(out)
-        logger.debug(f"ResidualConvBlock: after bn1 - out shape: {out.shape}")
+        logger.debug(f"ResidualConvBlock: after bn1 - out shape: {out.shape}, out device: {out.device}")
 
         out = self.relu(out)
-        logger.debug(f"ResidualConvBlock: after relu - out shape: {out.shape}")
+        logger.debug(f"ResidualConvBlock: after relu - out shape: {out.shape}, out device: {out.device}")
 
         out = self.conv2(out)
-        logger.debug(f"ResidualConvBlock: after conv2 - out shape: {out.shape}")
+        logger.debug(f"ResidualConvBlock: after conv2 - out shape: {out.shape}, out device: {out.device}")
 
         out = self.bn2(out)
-        logger.debug(f"ResidualConvBlock: after bn2 - out shape: {out.shape}")
+        logger.debug(f"ResidualConvBlock: after bn2 - out shape: {out.shape}, out device: {out.device}")
 
         if self.is_res:
             if self.res_conv is not None:
                 identity = self.res_conv(identity)
-                logger.debug(f"ResidualConvBlock: after res_conv - identity shape: {identity.shape}")
+                logger.debug(f"ResidualConvBlock: after res_conv - identity shape: {identity.shape}, identity device: {identity.device}")
             out += identity
-            logger.debug(f"ResidualConvBlock: after adding identity - out shape: {out.shape}")
+            logger.debug(f"ResidualConvBlock: after adding identity - out shape: {out.shape}, out device: {out.device}")
 
         out = self.relu(out)
-        logger.debug(f"ResidualConvBlock: final output shape: {out.shape}")
+        logger.debug(f"ResidualConvBlock: final output shape: {out.shape}, output device: {out.device}")
 
         return out
 
@@ -81,7 +85,6 @@ class UnetUp(nn.Module):
     def __init__(self, in_channels, out_channels):
         super().__init__()
         self.up = nn.ConvTranspose2d(in_channels, out_channels, kernel_size=2, stride=2)
-        # Adjust the number of channels from out_channels to in_channels to match the skip connection
         self.match_channels = nn.Conv2d(out_channels, out_channels, kernel_size=1)
         logger.debug(f"UnetUp: init out_channels : {out_channels}")
         logger.debug(f"UnetUp: init in_channels : {in_channels}")
@@ -92,50 +95,37 @@ class UnetUp(nn.Module):
         )
 
     def forward(self, x, skip):
-        """
-        @brief Forward pass of the UnetUp block.
+        device = x.device  # Ensure the device is the same as the input tensor
+        logger.debug(f"UnetUp: before up - x shape: {x.shape}, x device: {x.device}, skip shape: {skip.shape}, skip device: {skip.device}")
 
-        @param x The upsampled image tensor.
-        @param skip The corresponding skip connection tensor from the downsampling path.
-
-        @return The refined upsampled image tensor.
-
-        The forward pass includes the following steps:
-        - Upsampling: Increase the spatial dimensions of the input tensor using the transposed convolution layer.
-        - Padding: If necessary, pad the upsampled image to match the spatial dimensions of the skip connection.
-        - Channel Matching: Adjust the number of channels in the upsampled image to match the skip connection if necessary.
-        - Concatenation: Concatenate the upsampled image and the skip connection along the channel dimension.
-        - Convolution: Process the concatenated image through the residual convolution blocks to produce the final output.
-        """
-        logger.debug(f"UnetUp: before up - x shape: {x.shape}, skip shape: {skip.shape}")
         x = self.up(x)
-        logger.debug(f"UnetUp: after up - x shape: {x.shape}")
+        logger.debug(f"UnetUp: after up - x shape: {x.shape}, x device: {x.device}")
 
         # Correctly pad x if necessary
         diffY = skip.size()[2] - x.size()[2]
         diffX = skip.size()[3] - x.size()[3]
         logger.debug(f"UnetUp: padding - diffY: {diffY}, diffX: {diffX}")
         x = F.pad(x, (diffX // 2, diffX - diffX // 2, diffY // 2, diffY - diffY // 2))
-        logger.debug(f"UnetUp: after padding - x shape: {x.shape}")
+        logger.debug(f"UnetUp: after padding - x shape: {x.shape}, x device: {x.device}")
 
         # Match channels if necessary
         if x.size(1) != skip.size(1):
-            logger.debug(f"UnetUp: before matching channels - x shape: {x.shape}, skip shape: {skip.shape}")
+            logger.debug(f"UnetUp: before matching channels - x shape: {x.shape}, x device: {x.device}, skip shape: {skip.shape}, skip device: {skip.device}")
             x = self.match_channels(x)  # Adjust channels to match the skip connection
-            logger.debug(f"UnetUp: after matching channels - x shape: {x.shape}")
+            logger.debug(f"UnetUp: after matching channels - x shape: {x.shape}, x device: {x.device}")
 
         # Concatenate and convolve
         x = torch.cat((skip, x), dim=1)
-        logger.debug(f"UnetUp: after cat - x shape: {x.shape}")
+        logger.debug(f"UnetUp: after cat - x shape: {x.shape}, x device: {x.device}")
 
         # Adjusting conv block to handle increased number of channels
         if x.size(1) != self.conv[0].conv1.in_channels:
             logger.debug(f"UnetUp: before conv - x shape: {x.shape}, expected: {self.conv[0].conv1.in_channels}")
-            self.conv[0] = ResidualConvBlock(x.size(1), self.conv[0].conv1.out_channels, is_res=True)
-            logger.debug(f"UnetUp: updated conv block to handle {x.size(1)} channels")
+            self.conv[0] = ResidualConvBlock(x.size(1), self.conv[0].conv1.out_channels, is_res=True).to(device)
+            logger.debug(f"UnetUp: updated conv block to handle {x.size(1)} channels, device: {device}")
 
         x = self.conv(x)
-        logger.debug(f"UnetUp: after conv - x shape: {x.shape}")
+        logger.debug(f"UnetUp: after conv - x shape: {x.shape}, x device: {x.device}")
 
         return x
 
