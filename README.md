@@ -195,8 +195,10 @@ Running tests
 ```
 python -m unittest discover
 python -m unittest discover -s tests -p "test_lang_utilities.py"
-python -m unittest discover -s tests -p "test_diffusion_utilities.py"
+python -m unittest discover -s tests -p "test_diffusion_utilities.py" > .generated\out.log 2>&1
+
 or
+
 set PYTHONPATH=%CD%\src;%CD%
 set PYTHONIOENCODING=utf-8
 set LOGGING_LEVEL=DEBUG

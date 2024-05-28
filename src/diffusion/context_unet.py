@@ -93,6 +93,7 @@ class ContextUnet(nn.Module):
 
         # Log the shapes of the input tensors
         logger.debug(f"ContextUnet: input x shape: {x.shape}, t shape: {t.shape}, c shape: {c.shape if c is not None else 'None'}")
+        logger.debug(f"ContextUnet: input x device: {x.device}, t shape: {t.shape}, c shape: {c.shape if c is not None else 'None'}")
 
         # Initial convolution
         x = self.init_conv(x)
@@ -126,13 +127,19 @@ class ContextUnet(nn.Module):
         logger.debug(f"ContextUnet: cemb1 shape: {cemb1.shape}, temb1 shape: {temb1.shape}")
         logger.debug(f"ContextUnet: cemb2 shape: {cemb2.shape}, temb2 shape: {temb2.shape}")
 
+        # Ensure all tensors are on the same device
+        hiddenvec = hiddenvec.to(device)
+        down3 = down3.to(device)
+
         # Upsampling
         up1 = self.up1(cemb1 * hiddenvec + temb1, down3)
         logger.debug(f"ContextUnet: up1 shape: {up1.shape}")
 
+        down2 = down2.to(device)
         up2 = self.up2(cemb2 * up1 + temb2, down2)
         logger.debug(f"ContextUnet: up2 shape: {up2.shape}")
 
+        down1 = down1.to(device)
         up3 = self.up3(up2, down1)
         logger.debug(f"ContextUnet: up3 shape: {up3.shape}")
 

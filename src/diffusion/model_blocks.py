@@ -89,6 +89,12 @@ class UnetUp(nn.Module):
         self.conv = nn.Sequential(
             ResidualConvBlock(out_channels * 2, out_channels, is_res=True),
             ResidualConvBlock(out_channels, out_channels, is_res=True)
+            # nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
+            # nn.BatchNorm2d(out_channels),
+            # nn.ReLU(inplace=True),
+            # nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1),
+            # nn.BatchNorm2d(out_channels),
+            # nn.ReLU(inplace=True),
         )
 
     def forward(self, x, skip):
@@ -107,6 +113,11 @@ class UnetUp(nn.Module):
         - Concatenation: Concatenate the upsampled image and the skip connection along the channel dimension.
         - Convolution: Process the concatenated image through the residual convolution blocks to produce the final output.
         """
+        # x = F.interpolate(x, scale_factor=2, mode="nearest")
+        # x = torch.cat((x, skip_input), dim=1)
+        
+        # device = x.device  # Ensure the device is the same as the input tensor
+        # x = self.conv(x.to(device))  # Explicitly move x to the correct device
         logger.debug(f"UnetUp: before up - x shape: {x.shape}, skip shape: {skip.shape}")
         x = self.up(x)
         logger.debug(f"UnetUp: after up - x shape: {x.shape}")
