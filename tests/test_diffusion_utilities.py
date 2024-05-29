@@ -7,7 +7,7 @@ import os
 from torch.utils.data import DataLoader
 from src.img_utilities import TextImageDataset, render_text_image
 from src.diffusion import ContextUnet
-from src.diffusion.diffusion_model import train_diffusion_model, evaluate_model
+from src.diffusion.diffusion_model import load_model, train_diffusion_model, evaluate_model
 from src.lang_utilities import arabic_alphabet
 from PIL import Image
 import logging
@@ -82,6 +82,7 @@ class TestDiffusionUtilities(unittest.TestCase):
         self._train_diffusion_model_for_device("cpu")
 
     @unittest.skipIf(not torch.cuda.is_available(), "CUDA is not available")
+    # @unittest.skip("Skipping training test temporarily, we know it works!")
     def test_train_diffusion_model_cuda(self):
         self._train_diffusion_model_for_device("cuda")
 
@@ -142,12 +143,24 @@ class TestDiffusionUtilities(unittest.TestCase):
         self.assertIsNotNone(trained_model)
         self.assertTrue(os.path.exists(self.save_path))
 
-    @unittest.skip("Skipping Arabic test with 4 characters")
-    def test_evaluate_arabic_text(self):
-        text_to_generate = "اختبار"
-        generated_image = evaluate_model(self.model, text_to_generate, self.font_name, self.font_size, self.image_size, self.is_arabic, self.device)
+    def _common_evaluate_model(self, model_path, device, text_to_generate):
+        model = load_model(model_path, device)
+        padded_text = self.pad_text_to_length(text_to_generate, 10)  # Adjust the length as needed
+        generated_image = evaluate_model(model, padded_text, self.font_name, self.font_size, self.image_size, self.is_arabic, device)
         self.assertIsInstance(generated_image, torch.Tensor)
-        self.assertEqual(generated_image.shape[2:], self.image_size)
+        self.assertEqual(generated_image.shape[1:], self.image_size)
+
+    @unittest.skip("Skipping training test temporarily")
+    def test_evaluate_model_cpu(self):
+        model_path = ".generated/trained_model_cpu.pth"
+        self._common_evaluate_model(model_path, torch.device("cpu"), "اختبار")
+
+    @unittest.skipIf(not torch.cuda.is_available(), "CUDA is not available")
+    @unittest.skip("Skipping training test temporarily")
+    def test_evaluate_model_cuda(self):
+        model_path = ".generated/trained_model_cuda.pth"
+        self._common_evaluate_model(model_path, torch.device("cuda"), "اختبار")
+
 
 
     def tearDown(self):
