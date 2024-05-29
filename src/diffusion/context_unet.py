@@ -13,10 +13,10 @@ class ContextUnet(nn.Module):
     """
     @brief A neural network model designed for image processing tasks, following a U-Net architecture.
 
-    @param in_channels The number of input channels in the images.
-    @param n_feat The number of features for the convolution layers.
-    @param n_cfeat The number of context features.
-    @param height The height of the input images.
+    in_channels (int): Number of input channels in the image (e.g., 3 for RGB).
+    n_feat (int): Number of features for the convolution layers. Default is 64.
+    n_cfeat (int): Number of context features for the embedding. Default is 10.
+    height (int): Height of the input images. Default is 128.
 
     The class consists of several layers including:
     - init_conv: An initial convolution block to process the input image.
@@ -31,7 +31,7 @@ class ContextUnet(nn.Module):
         super().__init__()
         self.in_channels = in_channels
         self.n_feat = n_feat
-        self.n_cfeat = n_cfeat
+        self.n_cfeat = n_cfeat  # Adjust to match the checkpoint
         self.h = height
 
         # Initial convolution block
@@ -74,9 +74,9 @@ class ContextUnet(nn.Module):
         """
         @brief Forward pass of the ContextUnet model.
 
-        @param x The input image tensor.
-        @param t The time step tensor.
-        @param c The optional context tensor.
+        x (Tensor): The input image tensor.
+        t (Tensor): The time step tensor.
+        c (Tensor, optional): The context tensor. Defaults to None.
 
         @return The output image tensor after processing through the U-Net architecture.
 
