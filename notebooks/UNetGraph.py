@@ -238,28 +238,30 @@ def add_box(ax, text, xy, boxstyle="round,pad=0.3", box_color="lightblue", text_
         color=text_color, fontsize=10, family="monospace"
     )
 
-def create_robokutt_unet_diagram():
-    fig, ax = plt.subplots(figsize=(14, 10))
-    ax.set_xlim(-10, 10)
-    ax.set_ylim(-20, 15)
+def create_robokhutt_unet_diagram():
+    fig, ax = plt.subplots(figsize=(14, 12))
+    ax.set_xlim(-12, 12)
+    ax.set_ylim(-15, 15)
     ax.axis('off')
 
-    # Coordinates for the layers in a "U" shape
+    # Coordinates for the layers
     coords = {
-        "Input Image\n256x256x3": (0, 13),
-        "Initial Conv Block\n256x256x64": (0, 11),
-        "Downsample Layer 1\n128x128x128": (0, 9),
-        "Downsample Layer 2\n64x64x256": (0, 7),
-        "Downsample Layer 3\n32x32x512": (0, 5),
-        "Bottleneck\n16x16x512": (0, 3),
-        "Embedding Layer 1\n1x1x512": (0, 1),
-        "Embedding Layer 2\n1x1x256": (0, -1),
-        "Upsample Layer 1\n32x32x512": (5, 1),
-        "Upsample Layer 2\n64x64x256": (5, 3),
-        "Upsample Layer 3\n128x128x128": (5, 5),
-        "Upsample Layer 4\n256x256x64": (5, 7),
-        "Output Conv Block\n256x256x3": (5, 9),
-        "Output Image\n256x256x3": (5, 11)
+        "Input Image\n512x128x3": (-6, 13),
+        "Initial Conv Block\n512x128x64": (-6, 11),
+        "Downsample Layer 1\n256x64x128": (-6, 9),
+        "Downsample Layer 2\n128x32x256": (-6, 7),
+        "Downsample Layer 3\n64x16x512": (-6, 5),
+        "Bottleneck\n512x512": (0, 3),
+        "Embedding Layer 1\n1x512": (0, 1.5),
+        "Embedding Layer 2\n1x256": (0, 0),
+        "Embedding Layer 3\nn_cfeatx512": (0, -1.5),
+        "Embedding Layer 4\nn_cfeatx256": (0, -3),
+        "Upsample Layer 1\n128x32x512": (6, 5),
+        "Upsample Layer 2\n256x64x256": (6, 7),
+        "Upsample Layer 3\n512x128x128": (6, 9),
+        "Upsample Layer 4\n512x128x64": (6, 11),
+        "Output Conv Block\n512x128x3": (6, 13),
+        "Output Image\n512x128x3": (6, 15)
     }
 
     # Add the boxes
@@ -268,19 +270,21 @@ def create_robokutt_unet_diagram():
 
     # Add the arrows
     arrows = [
-        ("Input Image\n256x256x3", "Initial Conv Block\n256x256x64"),
-        ("Initial Conv Block\n256x256x64", "Downsample Layer 1\n128x128x128"),
-        ("Downsample Layer 1\n128x128x128", "Downsample Layer 2\n64x64x256"),
-        ("Downsample Layer 2\n64x64x256", "Downsample Layer 3\n32x32x512"),
-        ("Downsample Layer 3\n32x32x512", "Bottleneck\n16x16x512"),
-        ("Bottleneck\n16x16x512", "Embedding Layer 1\n1x1x512"),
-        ("Embedding Layer 1\n1x1x512", "Embedding Layer 2\n1x1x256"),
-        ("Embedding Layer 2\n1x1x256", "Upsample Layer 1\n32x32x512"),
-        ("Upsample Layer 1\n32x32x512", "Upsample Layer 2\n64x64x256"),
-        ("Upsample Layer 2\n64x64x256", "Upsample Layer 3\n128x128x128"),
-        ("Upsample Layer 3\n128x128x128", "Upsample Layer 4\n256x256x64"),
-        ("Upsample Layer 4\n256x256x64", "Output Conv Block\n256x256x3"),
-        ("Output Conv Block\n256x256x3", "Output Image\n256x256x3")
+        ("Input Image\n512x128x3", "Initial Conv Block\n512x128x64"),
+        ("Initial Conv Block\n512x128x64", "Downsample Layer 1\n256x64x128"),
+        ("Downsample Layer 1\n256x64x128", "Downsample Layer 2\n128x32x256"),
+        ("Downsample Layer 2\n128x32x256", "Downsample Layer 3\n64x16x512"),
+        ("Downsample Layer 3\n64x16x512", "Bottleneck\n512x512"),
+        ("Bottleneck\n512x512", "Embedding Layer 1\n1x512"),
+        ("Embedding Layer 1\n1x512", "Embedding Layer 2\n1x256"),
+        ("Embedding Layer 2\n1x256", "Embedding Layer 3\nn_cfeatx512"),
+        ("Embedding Layer 3\nn_cfeatx512", "Embedding Layer 4\nn_cfeatx256"),
+        ("Bottleneck\n512x512", "Upsample Layer 1\n128x32x512"),
+        ("Upsample Layer 1\n128x32x512", "Upsample Layer 2\n256x64x256"),
+        ("Upsample Layer 2\n256x64x256", "Upsample Layer 3\n512x128x128"),
+        ("Upsample Layer 3\n512x128x128", "Upsample Layer 4\n512x128x64"),
+        ("Upsample Layer 4\n512x128x64", "Output Conv Block\n512x128x3"),
+        ("Output Conv Block\n512x128x3", "Output Image\n512x128x3")
     ]
 
     for start, end in arrows:
@@ -289,5 +293,5 @@ def create_robokutt_unet_diagram():
 
     plt.show()
 
-create_robokutt_unet_diagram()
+create_robokhutt_unet_diagram()
 # visualize_unet_3d_boxes()
