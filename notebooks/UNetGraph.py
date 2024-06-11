@@ -264,9 +264,29 @@ def create_robokhutt_unet_diagram():
         "Output Image\n512x128x3": (6, 15)
     }
 
-    # Add the boxes
+    # Define colors for each block
+    colors = {
+        "Input Image\n512x128x3": "lightblue",
+        "Initial Conv Block\n512x128x64": "blue",
+        "Downsample Layer 1\n256x64x128": "green",
+        "Downsample Layer 2\n128x32x256": "green",
+        "Downsample Layer 3\n64x16x512": "green",
+        "Bottleneck\n512x512": "purple",
+        "Embedding Layer 1\n1x512": "red",
+        "Embedding Layer 2\n1x256": "red",
+        "Embedding Layer 3\nn_cfeatx512": "red",
+        "Embedding Layer 4\nn_cfeatx256": "red",
+        "Upsample Layer 1\n128x32x512": "orange",
+        "Upsample Layer 2\n256x64x256": "orange",
+        "Upsample Layer 3\n512x128x128": "orange",
+        "Upsample Layer 4\n512x128x64": "orange",
+        "Output Conv Block\n512x128x3": "lightblue",
+        "Output Image\n512x128x3": "lightblue"
+    }
+
+    # Add the boxes with corresponding colors
     for label, coord in coords.items():
-        add_box(ax, label, coord)
+        add_box(ax, label, coord, box_color=colors[label])
 
     # Add the arrows
     arrows = [
