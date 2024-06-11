@@ -79,30 +79,6 @@ The UNet architecture in the ContextUnet implementation consists of multiple lay
 6. **Output Convolution: (Purple)**
    - `out`: Conv2d + GroupNorm + ReLU + Conv2d (128, 3) - Final convolution to produce the 3-channel RGB output, with normalization and activation for final adjustments.
 
-```mermaid
-graph TD
-  Start[Input Image]
-  Start -->|Initial Convolution| init_conv[init_conv: ResidualConvBlock]
-  init_conv -->|Downsampling| down1[down1: UnetDown]
-  down1 --> down2[down2: UnetDown]
-  down2 --> down3[down3: UnetDown]
-  down3 --> to_vec[to_vec: AvgPool2d + GELU]
-  to_vec -->|Embedding Layers| embedding_layers[Embedding Layers]
-  embedding_layers -->|Upsampling| up0[up0: ConvTranspose2d]
-  up0 --> up1[up1: UnetUp]
-  up1 --> up2[up2: UnetUp]
-  up2 --> up3[up3: UnetUp]
-  up3 --> out[out: Conv2d + GroupNorm + ReLU]
-  out -->|Output Image| End[End]
-  
-  subgraph Embedding Layers
-    to_vec --> timeembed1[timeembed1: EmbedFC]
-    to_vec --> timeembed2[timeembed2: EmbedFC]
-    to_vec --> contextembed1[contextembed1: EmbedFC]
-    to_vec --> contextembed2[contextembed2: EmbedFC]
-  end
-```
-
 ## Summary of the Hyperparameters in RoboKhutt Implementation
 
 ### ContextUnet Hyperparameters
