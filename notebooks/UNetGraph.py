@@ -246,20 +246,20 @@ def create_robokutt_unet_diagram():
 
     # Coordinates for the layers in a "U" shape
     coords = {
-        "Input Image": (0, 13),
-        "Initial Conv Block": (0, 11),
-        "Downsample Layer 1": (0, 9),
-        "Downsample Layer 2": (0, 7),
-        "Downsample Layer 3": (0, 5),
-        "Bottleneck": (0, 3),
-        "Embedding Layer 1": (0, 1),
-        "Embedding Layer 2": (0, -1),
-        "Upsample Layer 1": (5, 1),
-        "Upsample Layer 2": (5, 3),
-        "Upsample Layer 3": (5, 5),
-        "Upsample Layer 4": (5, 7),
-        "Output Conv Block": (5, 9),
-        "Output Image": (5, 11)
+        "Input Image\n256x256x3": (0, 13),
+        "Initial Conv Block\n256x256x64": (0, 11),
+        "Downsample Layer 1\n128x128x128": (0, 9),
+        "Downsample Layer 2\n64x64x256": (0, 7),
+        "Downsample Layer 3\n32x32x512": (0, 5),
+        "Bottleneck\n16x16x512": (0, 3),
+        "Embedding Layer 1\n1x1x512": (0, 1),
+        "Embedding Layer 2\n1x1x256": (0, -1),
+        "Upsample Layer 1\n32x32x512": (5, 1),
+        "Upsample Layer 2\n64x64x256": (5, 3),
+        "Upsample Layer 3\n128x128x128": (5, 5),
+        "Upsample Layer 4\n256x256x64": (5, 7),
+        "Output Conv Block\n256x256x3": (5, 9),
+        "Output Image\n256x256x3": (5, 11)
     }
 
     # Add the boxes
@@ -268,19 +268,19 @@ def create_robokutt_unet_diagram():
 
     # Add the arrows
     arrows = [
-        ("Input Image", "Initial Conv Block"),
-        ("Initial Conv Block", "Downsample Layer 1"),
-        ("Downsample Layer 1", "Downsample Layer 2"),
-        ("Downsample Layer 2", "Downsample Layer 3"),
-        ("Downsample Layer 3", "Bottleneck"),
-        ("Bottleneck", "Embedding Layer 1"),
-        ("Embedding Layer 1", "Embedding Layer 2"),
-        ("Embedding Layer 2", "Upsample Layer 1"),
-        ("Upsample Layer 1", "Upsample Layer 2"),
-        ("Upsample Layer 2", "Upsample Layer 3"),
-        ("Upsample Layer 3", "Upsample Layer 4"),
-        ("Upsample Layer 4", "Output Conv Block"),
-        ("Output Conv Block", "Output Image")
+        ("Input Image\n256x256x3", "Initial Conv Block\n256x256x64"),
+        ("Initial Conv Block\n256x256x64", "Downsample Layer 1\n128x128x128"),
+        ("Downsample Layer 1\n128x128x128", "Downsample Layer 2\n64x64x256"),
+        ("Downsample Layer 2\n64x64x256", "Downsample Layer 3\n32x32x512"),
+        ("Downsample Layer 3\n32x32x512", "Bottleneck\n16x16x512"),
+        ("Bottleneck\n16x16x512", "Embedding Layer 1\n1x1x512"),
+        ("Embedding Layer 1\n1x1x512", "Embedding Layer 2\n1x1x256"),
+        ("Embedding Layer 2\n1x1x256", "Upsample Layer 1\n32x32x512"),
+        ("Upsample Layer 1\n32x32x512", "Upsample Layer 2\n64x64x256"),
+        ("Upsample Layer 2\n64x64x256", "Upsample Layer 3\n128x128x128"),
+        ("Upsample Layer 3\n128x128x128", "Upsample Layer 4\n256x256x64"),
+        ("Upsample Layer 4\n256x256x64", "Output Conv Block\n256x256x3"),
+        ("Output Conv Block\n256x256x3", "Output Image\n256x256x3")
     ]
 
     for start, end in arrows:
