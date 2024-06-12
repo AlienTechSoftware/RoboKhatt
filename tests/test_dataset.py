@@ -2,10 +2,13 @@
 # tests/test_dataset.py
 
 import unittest
-from src.diffusion.dataset import ArabicDataset, create_database, load_words_from_file, load_generated_arabic_shapes, load_arabic_datasources
-from src.lang_utilities import arabic_alphabet
 import sqlite3
 import os
+import torch
+from torch.utils.data import DataLoader
+from src.diffusion.dataset import ArabicDataset, create_database, load_words_from_file, load_generated_arabic_shapes, load_arabic_datasources
+from src.img_utilities import TextImageDataset
+from src.lang_utilities import arabic_alphabet
 
 class TestArabicDataset(unittest.TestCase):
     @classmethod
@@ -53,6 +56,27 @@ class TestArabicDataset(unittest.TestCase):
         self.cursor.execute('SELECT COUNT(*) FROM words')
         db_word_count = self.cursor.fetchone()[0]
         self.assertEqual(total_words, db_word_count)
+
+    def test_dataset_generation(self):
+        # Set alphabet for this test
+        alphabet = arabic_alphabet
+        max_length = 2
+        font_name = "arial.ttf"
+        font_size = 30
+        image_size = (512, 128)
+        is_arabic = True
+
+        # Create dataset and dataloader
+        dataset = TextImageDataset(alphabet, max_length, font_name, font_size, image_size, is_arabic)
+        
+        # Test if dataset generates the correct number of samples
+        self.assertEqual(len(dataset), len(list(dataset.texts)))
+
+        # Test if dataset returns images and text
+        for i in range(len(dataset)):
+            image, text = dataset[i]
+            self.assertIsInstance(image, torch.Tensor)
+            self.assertIsInstance(text, str)
 
 if __name__ == "__main__":
     unittest.main()

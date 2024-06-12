@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# .\tests\test_img_utilities.py
+# tests/test_img_utilities.py
 
 import unittest
 import os
@@ -7,6 +7,7 @@ from PIL import ImageFont
 from src.img_utilities import render_text_image, TextImageDataset
 from src.lang_utilities import generate_arabic_shapes_dynamic, arabic_alphabet
 import easyocr
+from PIL import Image
 
 class TestRenderTextImage(unittest.TestCase):
 
@@ -20,7 +21,7 @@ class TestRenderTextImage(unittest.TestCase):
     def setUp(self):
         self.text_en = "Test"
         self.text_ar = "اختبار"  # Arabic for "Test"
-        self.image_size = (400, 300)
+        self.image_size = (512, 128)  # Correct image size as a tuple
         self.font_name = "arial.ttf"
         self.font_size = 30
         self.positions = [
@@ -28,6 +29,12 @@ class TestRenderTextImage(unittest.TestCase):
             'center-left', 'center', 'center-right',
             'bottom-left', 'bottom-center', 'bottom-right'
         ]
+
+    def test_render_text_image(self):
+        text = "تم"
+        image = render_text_image(text, self.image_size, self.font_name, self.font_size, 'bottom-right', is_arabic=True)
+        self.assertIsInstance(image, Image.Image)
+        self.assertEqual(image.size, self.image_size)
 
     def test_render_text_image_english(self):
         for position in self.positions:
