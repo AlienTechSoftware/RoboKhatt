@@ -210,11 +210,13 @@ def text_to_image(model, text, font_name, font_size, image_size, is_arabic, devi
         generated_image_pil.save(save_path)
         logger.info(f"Generated image saved to {save_path}")
 
-def denoise_image(model, image, num_steps):
+def denoise_image(diffusion, image, num_steps):
     for step in reversed(range(num_steps)):
         t = torch.tensor([step] * image.size(0)).to(image.device).long()
-        predicted_noise = model(image, t)
-        image = image - predicted_noise * (betas[step] ** 0.5)
+        alpha_t = diffusion._extract_into_tensor(diffusion.alphas, t, image.shape)
+        beta_t = diffusion._extract_into_tensor(diffusion.betas, t, image.shape)
+        noise = diffusion.model(image, t)
+        image = (image - noise * (beta_t ** 0.5)) / (alpha_t ** 0.5)
     return image
 
 class GaussianDiffusion(nn.Module):
