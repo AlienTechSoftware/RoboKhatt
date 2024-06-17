@@ -5,9 +5,10 @@ import unittest
 import torch
 import os
 from src.img_utilities import TextImageDataset
-from src.diffusion.diffusion_model import load_model, evaluate_model, TextToImageModel
+from src.diffusion.diffusion_model import load_model, evaluate_model, TextToImageModel, text_to_image
 from src.lang_utilities import arabic_alphabet
 import logging
+from PIL import Image
 
 # Setup logging
 logging.basicConfig(level=logging.DEBUG)
@@ -71,12 +72,29 @@ class TestDiffusionEvaluation(unittest.TestCase):
             f"Expected shape {self.image_size} or {self.image_size[::-1]}, but got {generated_image.shape[1:]}"
         )
 
-    @unittest.skip("Skipping training test temporarily")
+    # @unittest.skip("Skipping training test temporarily")
     def test_evaluate_model(self):
         text_to_generate = "تم"
         generated_image = evaluate_model(self.model, text_to_generate, self.font_name, self.font_size, self.image_size, self.is_arabic, self.device)
+        
+        # Print the shape of the generated image tensor
+        logger.debug(f"Generated image shape: {generated_image.shape}")
+        
+        # Ensure the tensor has the correct dimensions for conversion to a PIL Image
+        if generated_image.shape[0] == 1:  # Remove the batch dimension if present
+            generated_image = generated_image.squeeze(0)
+        
+        # Permute the dimensions to match (height, width, channels)
+        generated_image = generated_image.permute(1, 2, 0)
+        
+        # Convert the tensor to a numpy array and then to a PIL Image
+        generated_image_pil = Image.fromarray((generated_image.cpu().numpy() * 255).astype('uint8'))
+        
+        # Save the generated image for visual validation
+        generated_image_pil.save(".generated/test_generated_image.png")
+
         self.assertIsInstance(generated_image, torch.Tensor)
-        self.assertEqual(generated_image.shape[2:], self.image_size)
+        self.assertEqual(generated_image.shape[:2], (self.image_size[1], self.image_size[0]))  # Check the transposed dimensions
 
     @unittest.skip("Skipping evaluation test temporarily")
     def test_evaluate_model_cpu(self):
@@ -91,6 +109,14 @@ class TestDiffusionEvaluation(unittest.TestCase):
 
     def pad_text_to_length(self, text, length):
         return text.ljust(length)
+
+    def test_text_to_image(self):
+        text_to_generate = "تم"
+        save_path = ".generated/test_text_to_image_output.png"
+        text_to_image(self.model, text_to_generate, self.font_name, self.font_size, self.image_size, self.is_arabic, self.device, save_path)
+        
+        # Check if the image file is created
+        self.assertTrue(os.path.exists(save_path), f"Generated image not found at {save_path}")
 
 if __name__ == "__main__":
     unittest.main()

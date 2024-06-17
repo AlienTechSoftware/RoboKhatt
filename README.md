@@ -173,6 +173,8 @@ python -m unittest discover
 python -m unittest discover -s tests -p "test_lang_utilities.py"
 python -m unittest discover -s tests -p "test_diffusion_utilities.py" > .generated\out.log 2>&1
 
+python -m unittest tests.test_diffusion_evaluation.TestDiffusionEvaluation.test_evaluate_model
+
 or
 
 set PYTHONPATH=%CD%\src;%CD%
